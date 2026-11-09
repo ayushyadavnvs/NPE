@@ -1,0 +1,11 @@
+*/solution*/
+.Xil/
+*.log
+*.jou
+*.str
+.vitis/
+_ide/
+*.bit
+*.xclbin
+
+
