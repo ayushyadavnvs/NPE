@@ -9,3 +9,5 @@ _ide/
 *.xclbin
 
 
+__pycache__/
+*.pyc
