@@ -1,0 +1,1250 @@
+[
+ {
+  "name": "D001",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1426907,
+   -1254512,
+   1073393
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D002",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -973156,
+   -1333948,
+   971836
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D003",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -2322201,
+   -3136152,
+   2863504
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D004",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -936238,
+   -1047762,
+   594161
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D005",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1346664,
+   -2332464,
+   1664158
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D006",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1260870,
+   -2746368,
+   2029381
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D007",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1269054,
+   -1977040,
+   1536605
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D008",
+  "label": "-",
+  "info": "",
+  "logits": [
+   530212,
+   -428319,
+   -557274
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D009",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -543783,
+   -1862859,
+   671052
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D010",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -2440044,
+   -1615341,
+   2111190
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D011",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1770433,
+   -2641775,
+   2167654
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D012",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -499434,
+   -1881936,
+   939684
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D013",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -427348,
+   -900135,
+   387169
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D014",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -833529,
+   -2688135,
+   1444286
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D015",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -525193,
+   -2355604,
+   1070418
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D016",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1274201,
+   -3308284,
+   2323255
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D017",
+  "label": "-",
+  "info": "",
+  "logits": [
+   529618,
+   -505971,
+   -463666
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D018",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -2037068,
+   -2080431,
+   2118920
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D019",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1071307,
+   -1381536,
+   1045324
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D020",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -760674,
+   -2804507,
+   1678380
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D021",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -2147191,
+   -1421308,
+   1877178
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D022",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -618194,
+   -1807912,
+   913239
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D023",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1903845,
+   -2306702,
+   2030456
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D024",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -108136,
+   -1141802,
+   166694
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D025",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1420133,
+   -1278480,
+   1234032
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D026",
+  "label": "-",
+  "info": "",
+  "logits": [
+   689719,
+   -390951,
+   -575628
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D027",
+  "label": "-",
+  "info": "",
+  "logits": [
+   374337,
+   -424194,
+   -512400
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D028",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -241157,
+   148179,
+   -682317
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "D029",
+  "label": "-",
+  "info": "",
+  "logits": [
+   125123,
+   -840125,
+   153756
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D030",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1331346,
+   -1670145,
+   1429080
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D031",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -244230,
+   -470370,
+   191525
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D032",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -309799,
+   402773,
+   -821438
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "D033",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -349707,
+   -480039,
+   263725
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D034",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -571852,
+   94932,
+   -194635
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "D035",
+  "label": "-",
+  "info": "",
+  "logits": [
+   138972,
+   -49037,
+   -602444
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D036",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -343739,
+   -52485,
+   -178886
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "D037",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -711558,
+   -272130,
+   -37884
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D038",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1704697,
+   -2187163,
+   1846069
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D039",
+  "label": "-",
+  "info": "",
+  "logits": [
+   667706,
+   -451241,
+   -467263
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D040",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -290333,
+   159632,
+   -555072
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "D041",
+  "label": "-",
+  "info": "",
+  "logits": [
+   48792,
+   -60048,
+   -431028
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D042",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1294295,
+   -1717544,
+   1466560
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D043",
+  "label": "-",
+  "info": "",
+  "logits": [
+   426672,
+   -308673,
+   -715026
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D044",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -89983,
+   -160417,
+   -569658
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D045",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1413215,
+   -230319,
+   503185
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D046",
+  "label": "-",
+  "info": "",
+  "logits": [
+   705531,
+   -603932,
+   -425335
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "D047",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -819823,
+   -551572,
+   200770
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D048",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -617854,
+   -1667274,
+   1115165
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D049",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -853439,
+   -2007427,
+   1426935
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "D050",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1804119,
+   -1131254,
+   1156125
+  ],
+  "pred": 2,
+  "pred_name": "drone"
+ },
+ {
+  "name": "N001",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -202008,
+   1078589,
+   -2467354
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N002",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -904869,
+   263207,
+   -271766
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N003",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1008626,
+   1130139,
+   -1883816
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N004",
+  "label": "-",
+  "info": "",
+  "logits": [
+   783314,
+   -480511,
+   -688748
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N005",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -382490,
+   734462,
+   -1405945
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N006",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -828761,
+   110991,
+   -4
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N007",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -983106,
+   492428,
+   -935470
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N008",
+  "label": "-",
+  "info": "",
+  "logits": [
+   221323,
+   301216,
+   -1661572
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N009",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1767362,
+   3093471,
+   -3948423
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N010",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -982883,
+   514703,
+   -568137
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N011",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1273678,
+   443478,
+   -761477
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N012",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -279138,
+   -254944,
+   -741973
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N013",
+  "label": "-",
+  "info": "",
+  "logits": [
+   487276,
+   -591095,
+   -362121
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N014",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -527240,
+   84468,
+   -486556
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N015",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1190490,
+   2002698,
+   -2764620
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N016",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -470218,
+   45308,
+   -362857
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N017",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -848555,
+   1964375,
+   -3036261
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N018",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1795157,
+   2519872,
+   -2824452
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N019",
+  "label": "-",
+  "info": "",
+  "logits": [
+   1096734,
+   -751834,
+   -1807339
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N020",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -443602,
+   526764,
+   -923648
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N021",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1522052,
+   611627,
+   -484913
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N022",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -589488,
+   -123910,
+   -288459
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N023",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1256110,
+   918686,
+   -976530
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N024",
+  "label": "-",
+  "info": "",
+  "logits": [
+   691630,
+   -730860,
+   -419669
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N025",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1487699,
+   1450471,
+   -1746289
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N026",
+  "label": "-",
+  "info": "",
+  "logits": [
+   231572,
+   -98450,
+   -377630
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N027",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -446642,
+   1217296,
+   -2108692
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N028",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -2225478,
+   1496610,
+   -1183674
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N029",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1403660,
+   2595705,
+   -3098630
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N030",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -856329,
+   1576749,
+   -2804073
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N031",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1895238,
+   1437797,
+   -1479952
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N032",
+  "label": "-",
+  "info": "",
+  "logits": [
+   225470,
+   267044,
+   -1854282
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N033",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1121579,
+   1447267,
+   -2093534
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N034",
+  "label": "-",
+  "info": "",
+  "logits": [
+   446039,
+   -321941,
+   -417372
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N035",
+  "label": "-",
+  "info": "",
+  "logits": [
+   267857,
+   -567705,
+   -245572
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N036",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -2562602,
+   2687344,
+   -2580311
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N037",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1750230,
+   3142500,
+   -3917993
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N038",
+  "label": "-",
+  "info": "",
+  "logits": [
+   1448766,
+   -1796681,
+   -821181
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N039",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -956561,
+   1313990,
+   -1619286
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N040",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1196209,
+   1599538,
+   -2097891
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N041",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -614740,
+   20374,
+   -143262
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N042",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1448760,
+   2228449,
+   -2667705
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N043",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -69423,
+   -70427,
+   -860612
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N044",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1597865,
+   2295559,
+   -2374334
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N045",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1579508,
+   2555967,
+   -3206994
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N046",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -435809,
+   569363,
+   -901499
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N047",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -3082993,
+   3964951,
+   -4181324
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N048",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -275324,
+   647726,
+   -1419417
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "N049",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -43101,
+   -427375,
+   -246304
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "N050",
+  "label": "-",
+  "info": "",
+  "logits": [
+   -1510198,
+   2086286,
+   -2357660
+  ],
+  "pred": 1,
+  "pred_name": "bird"
+ },
+ {
+  "name": "R001",
+  "label": "-",
+  "info": "stress all-0",
+  "logits": [
+   979371,
+   -1469315,
+   -218229
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "R002",
+  "label": "-",
+  "info": "stress all-255",
+  "logits": [
+   915677,
+   -590472,
+   -664182
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "R003",
+  "label": "-",
+  "info": "stress noise",
+  "logits": [
+   142726,
+   -170331,
+   -574932
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ },
+ {
+  "name": "R004",
+  "label": "-",
+  "info": "stress binary-noise",
+  "logits": [
+   -54325,
+   -300219,
+   -687836
+  ],
+  "pred": 0,
+  "pred_name": "other"
+ }
+]

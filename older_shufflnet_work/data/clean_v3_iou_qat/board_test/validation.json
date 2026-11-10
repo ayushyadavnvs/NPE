@@ -1,0 +1,254 @@
+{
+  "cache_contract": "d8365da6d87198e48b09e3706f7debdbea98705357f25bfcf2168194aa51677f",
+  "class_to_idx": {
+    "bird": 1,
+    "drone": 2,
+    "other": 0
+  },
+  "cpu_only": true,
+  "deviations": [],
+  "existing_export_files_unchanged": 38,
+  "golden_byte_identical": [
+    {
+      "byte_identical": true,
+      "input_sha256": "8f34c99ae0282c5473886c6baa0b8cd8eaccdf1468fe04c6b050fe8cf0095a51",
+      "name": "G000"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "dda30f7a3882832a6ebebf5a4a561892b0180d0ff20239c108ea32a573c98e7f",
+      "name": "G001"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "6ff1efccf0c7af0cbafb574436e0ca64b1ad1283887443cdbec62ede0a5e1228",
+      "name": "G002"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "712a117e1ad06478bf4e87d12976e44c4a19b0a021b8bd0bce06c9590ed053e4",
+      "name": "G003"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "e1aaea5066868c3b3a3d7460378ff6484da938da10a880957226ff4566d4cfb7",
+      "name": "G004"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "891a22f947414f2defc30e531629ac4c730a913fae50b3097713387af771051d",
+      "name": "G005"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "fef9615e3d84e84863ab387a91fac54130c93af13ce6186d3a259ded799819bb",
+      "name": "G006"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "d412e61504fc70458ff32524254770fc32b2d1aa447beaac1cc56b692120f24b",
+      "name": "G007"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "32bc344c2a94625e04ad3a380527cb5f0c4cc1a049e13591d2f43374a12015b3",
+      "name": "G008"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "0432f6e7fdd874b539371306e10aa3d63d6143f7895e2e3737bc386b3f48d7f0",
+      "name": "G009"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "c2719092b729566fad9ad3071af06421d5b7898215b39a87a900f285885d85cd",
+      "name": "G010"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "a17f67930a3fd50de598f4efd52547fb96817ad7a5a14b9b45727601315a1527",
+      "name": "G011"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "02834306d6126ba4c6261c84f44c71910822bed1aea4a330e9e63e5f54650a0f",
+      "name": "G012"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "bfcff64785e88678e5f49204c44b5444854eee6075c59280be96843f595c8bb0",
+      "name": "G013"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "d5656aafeab22726d1503e114c8d62f4bd174763ff559b27796639d8177a85de",
+      "name": "G014"
+    },
+    {
+      "byte_identical": true,
+      "input_sha256": "135a568696521effbbaaeb08b861c05cd059a21799ccefb2ae3c1299dd3145cc",
+      "name": "G015"
+    }
+  ],
+  "inputs": {
+    "code/accel3class_ref/golden/model_def.py": "840df29753fdf38ab8a8a08edd650c55166292e3aeade360251d7c666b79aaff",
+    "code/accel3class_ref/golden/quantize.py": "d8d1fb122d22b6e0ec7e617c93258d7a5cc425874c77cd07b49bee7cf2f4b86f",
+    "code/accel3class_ref/golden/ref_int8.py": "ffe6f7e1b03e77043ad68de4dd7de68901be8dac3c8df9ec7563fe357f67d49a",
+    "code/port/step6_common.py": "12827a361f514cbd0432862bf22792abfb1fb67b1d2e00c6594503dabafe10b6",
+    "code/port/step7_board_test.py": "f27389f092cc528c9f48c9e15040ae424f45e027fc66587bbc7aaeb87098f239",
+    "code/port/train_v2.py": "013a079460c4c8f9177b3a0cde63d1f807a479b583c226eb2cba6d3dc7ffa8d4",
+    "runs/clean_train_v3_iou/checkpoints/best.pt": "698147e8d0746c84d7ac6b3ceb96e492fb775b7685deabbb6f9bee2c8665c11b",
+    "runs/qat_v3_iou/export/golden/list.json": "0fdd2615dd9c069608cc41bbc1563f177ef6221b8a5d22ca610294e4877155fa",
+    "runs/qat_v3_iou/export/weights.bin": "804c7a346be1df7020b1fbb36298a41f34f08fe5b70bf0fdf4a0775539f30729",
+    "splits/clean_v3_carsdirect/test.jsonl": "cd8cf69da9659aece1e98d5766d86f02964a6cbce9fc09513791c74aa4efc12e",
+    "splits/clean_v3_carsdirect/test_cars.jsonl": "cc0ff65f695cc4916c81cd082050f2f94bcec49f289916ee9063fb69aaa62dd8",
+    "splits/clean_v3_carsdirect/test_halm_unseen.jsonl": "b1b087f5b7d4377f73ff2b27f6443e083b08f4577e9b3877a2bd83a6a63fad07"
+  },
+  "inventory": {
+    "test": {
+      "eligible": {
+        "aod4_mendeley": {
+          "bird": 235,
+          "drone": 130,
+          "other": 712
+        },
+        "bird_classification_rf": {
+          "bird": 1000,
+          "drone": 0,
+          "other": 0
+        },
+        "bird_only_rf": {
+          "bird": 656,
+          "drone": 0,
+          "other": 0
+        },
+        "birdvsdrone1": {
+          "bird": 126,
+          "drone": 155,
+          "other": 0
+        },
+        "drone_bird_backup": {
+          "bird": 98,
+          "drone": 154,
+          "other": 0
+        },
+        "drone_detection_new": {
+          "bird": 13,
+          "drone": 52,
+          "other": 0
+        },
+        "pathikg_drone": {
+          "bird": 0,
+          "drone": 4848,
+          "other": 0
+        },
+        "planes_helicopters": {
+          "bird": 0,
+          "drone": 5,
+          "other": 200
+        },
+        "small_aerial": {
+          "bird": 12,
+          "drone": 21,
+          "other": 12
+        },
+        "zenodo_sky": {
+          "bird": 0,
+          "drone": 0,
+          "other": 71
+        }
+      },
+      "excluded": 1965,
+      "total": 10465
+    },
+    "test_cars": {
+      "eligible": {
+        "CARS": {
+          "bird": 5000,
+          "drone": 5000,
+          "other": 0
+        }
+      },
+      "excluded": 0,
+      "total": 10000
+    },
+    "test_halm_unseen": {
+      "eligible": {
+        "halmstad": {
+          "bird": 1445,
+          "drone": 3609,
+          "other": 3123
+        }
+      },
+      "excluded": 0,
+      "total": 8177
+    }
+  },
+  "n": 490,
+  "notes": "Halmstad follows test_halm_unseen.jsonl labels without adding a visibility filter: 2 selected frames have visible=0; 0 have has_object=false. The exclusion of tight/empty rows refers to generated/virtual crops. Real sky remains a valid other example; CARS rows have no boxes by design.",
+  "open_questions": [],
+  "seed": 42,
+  "source_class_counts": {
+    "CARS": {
+      "bird": 50,
+      "drone": 50,
+      "other": 0
+    },
+    "aod4_mendeley": {
+      "bird": 17,
+      "drone": 5,
+      "other": 70
+    },
+    "bird_classification_rf": {
+      "bird": 47,
+      "drone": 0,
+      "other": 0
+    },
+    "bird_only_rf": {
+      "bird": 25,
+      "drone": 0,
+      "other": 0
+    },
+    "birdvsdrone1": {
+      "bird": 8,
+      "drone": 2,
+      "other": 0
+    },
+    "drone_bird_backup": {
+      "bird": 2,
+      "drone": 3,
+      "other": 0
+    },
+    "drone_detection_new": {
+      "bird": 1,
+      "drone": 1,
+      "other": 0
+    },
+    "halmstad": {
+      "bird": 30,
+      "drone": 30,
+      "other": 30
+    },
+    "pathikg_drone": {
+      "bird": 0,
+      "drone": 89,
+      "other": 0
+    },
+    "planes_helicopters": {
+      "bird": 0,
+      "drone": 0,
+      "other": 22
+    },
+    "small_aerial": {
+      "bird": 0,
+      "drone": 0,
+      "other": 2
+    },
+    "zenodo_sky": {
+      "bird": 0,
+      "drone": 0,
+      "other": 6
+    }
+  },
+  "status": "COMPLETE"
+}

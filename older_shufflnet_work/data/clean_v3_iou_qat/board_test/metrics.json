@@ -1,0 +1,318 @@
+{
+  "all": {
+    "agreement": 0.9387755102040817,
+    "fp32": {
+      "acc": 0.8,
+      "bird_recall": 0.7944444444444444,
+      "confusion": [
+        [
+          100,
+          11,
+          19
+        ],
+        [
+          32,
+          143,
+          5
+        ],
+        [
+          30,
+          1,
+          149
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.027777777777777776,
+        "bird_n": 180,
+        "fpr": 0.07741935483870968,
+        "non_drone_n": 310,
+        "other_called_drone": 0.14615384615384616,
+        "other_n": 130
+      },
+      "drone_recall": 0.8277777777777777,
+      "macro_f1": 0.7942851615646012,
+      "n": 490,
+      "other_recall": 0.7692307692307693,
+      "support": {
+        "bird": 180,
+        "drone": 180,
+        "other": 130
+      }
+    },
+    "int8": {
+      "acc": 0.7836734693877551,
+      "bird_recall": 0.8,
+      "confusion": [
+        [
+          95,
+          16,
+          19
+        ],
+        [
+          32,
+          144,
+          4
+        ],
+        [
+          32,
+          3,
+          145
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.022222222222222223,
+        "bird_n": 180,
+        "fpr": 0.07419354838709677,
+        "non_drone_n": 310,
+        "other_called_drone": 0.14615384615384616,
+        "other_n": 130
+      },
+      "drone_recall": 0.8055555555555556,
+      "macro_f1": 0.7768076418242367,
+      "n": 490,
+      "other_recall": 0.7307692307692307,
+      "support": {
+        "bird": 180,
+        "drone": 180,
+        "other": 130
+      }
+    }
+  },
+  "test": {
+    "agreement": 0.9666666666666667,
+    "fp32": {
+      "acc": 0.8966666666666666,
+      "bird_recall": 0.97,
+      "confusion": [
+        [
+          78,
+          10,
+          12
+        ],
+        [
+          1,
+          97,
+          2
+        ],
+        [
+          6,
+          0,
+          94
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.02,
+        "bird_n": 100,
+        "fpr": 0.07,
+        "non_drone_n": 200,
+        "other_called_drone": 0.12,
+        "other_n": 100
+      },
+      "drone_recall": 0.94,
+      "macro_f1": 0.8947624882407491,
+      "n": 300,
+      "other_recall": 0.78,
+      "support": {
+        "bird": 100,
+        "drone": 100,
+        "other": 100
+      }
+    },
+    "int8": {
+      "acc": 0.8933333333333333,
+      "bird_recall": 0.99,
+      "confusion": [
+        [
+          74,
+          12,
+          14
+        ],
+        [
+          0,
+          99,
+          1
+        ],
+        [
+          4,
+          1,
+          95
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.01,
+        "bird_n": 100,
+        "fpr": 0.075,
+        "non_drone_n": 200,
+        "other_called_drone": 0.14,
+        "other_n": 100
+      },
+      "drone_recall": 0.95,
+      "macro_f1": 0.8900616143567172,
+      "n": 300,
+      "other_recall": 0.74,
+      "support": {
+        "bird": 100,
+        "drone": 100,
+        "other": 100
+      }
+    }
+  },
+  "test_cars": {
+    "agreement": 0.96,
+    "fp32": {
+      "acc": 0.82,
+      "bird_recall": 0.76,
+      "confusion": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          11,
+          38,
+          1
+        ],
+        [
+          5,
+          1,
+          44
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.02,
+        "bird_n": 50,
+        "fpr": 0.02,
+        "non_drone_n": 50,
+        "other_called_drone": null,
+        "other_n": 0
+      },
+      "drone_recall": 0.88,
+      "macro_f1": 0.5934161245811157,
+      "n": 100,
+      "other_recall": null,
+      "support": {
+        "bird": 50,
+        "drone": 50,
+        "other": 0
+      }
+    },
+    "int8": {
+      "acc": 0.79,
+      "bird_recall": 0.76,
+      "confusion": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          10,
+          38,
+          2
+        ],
+        [
+          8,
+          1,
+          41
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.04,
+        "bird_n": 50,
+        "fpr": 0.04,
+        "non_drone_n": 50,
+        "other_called_drone": null,
+        "other_n": 0
+      },
+      "drone_recall": 0.82,
+      "macro_f1": 0.5785510047923966,
+      "n": 100,
+      "other_recall": null,
+      "support": {
+        "bird": 50,
+        "drone": 50,
+        "other": 0
+      }
+    }
+  },
+  "test_halm_unseen": {
+    "agreement": 0.8222222222222222,
+    "fp32": {
+      "acc": 0.45555555555555555,
+      "bird_recall": 0.26666666666666666,
+      "confusion": [
+        [
+          22,
+          1,
+          7
+        ],
+        [
+          20,
+          8,
+          2
+        ],
+        [
+          19,
+          0,
+          11
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.06666666666666667,
+        "bird_n": 30,
+        "fpr": 0.15,
+        "non_drone_n": 60,
+        "other_called_drone": 0.23333333333333334,
+        "other_n": 30
+      },
+      "drone_recall": 0.36666666666666664,
+      "macro_f1": 0.44459096459096453,
+      "n": 90,
+      "other_recall": 0.7333333333333333,
+      "support": {
+        "bird": 30,
+        "drone": 30,
+        "other": 30
+      }
+    },
+    "int8": {
+      "acc": 0.4111111111111111,
+      "bird_recall": 0.23333333333333334,
+      "confusion": [
+        [
+          21,
+          4,
+          5
+        ],
+        [
+          22,
+          7,
+          1
+        ],
+        [
+          20,
+          1,
+          9
+        ]
+      ],
+      "drone_false_alarm": {
+        "bird_called_drone": 0.03333333333333333,
+        "bird_n": 30,
+        "fpr": 0.1,
+        "non_drone_n": 60,
+        "other_called_drone": 0.16666666666666666,
+        "other_n": 30
+      },
+      "drone_recall": 0.3,
+      "macro_f1": 0.39498207885304665,
+      "n": 90,
+      "other_recall": 0.7,
+      "support": {
+        "bird": 30,
+        "drone": 30,
+        "other": 30
+      }
+    }
+  }
+}

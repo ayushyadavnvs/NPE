@@ -1,0 +1,6407 @@
+{
+ "confusion": [
+  [
+   95,
+   16,
+   19
+  ],
+  [
+   32,
+   144,
+   4
+  ],
+  [
+   32,
+   3,
+   145
+  ]
+ ],
+ "accuracy": 0.7836734693877551,
+ "per_set": {
+  "C": [
+   79,
+   100
+  ],
+  "H": [
+   37,
+   90
+  ],
+  "T": [
+   268,
+   300
+  ]
+ },
+ "int8_pred_mismatch": [],
+ "images": [
+  {
+   "tag": "BC001",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -168099,
+    511576,
+    -1314040
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC002",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1590170,
+    1409641,
+    -1322081
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC003",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1231470,
+    977788,
+    -1367043
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC004",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1414961,
+    832895,
+    -745543
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC005",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -506909,
+    488650,
+    -969161
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC006",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1576229,
+    1124688,
+    -798797
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC007",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -2757458,
+    3296385,
+    -3171208
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC008",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    17234,
+    245655,
+    -1027330
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC009",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1213312,
+    2106507,
+    -2861451
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC010",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    902868,
+    -539117,
+    -723956
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC011",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1375304,
+    1680663,
+    -1988945
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC012",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1441949,
+    2037455,
+    -2381957
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC013",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -930064,
+    1205457,
+    -1693102
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC014",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1076532,
+    2035123,
+    -2530739
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC015",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1611732,
+    877844,
+    -681308
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC016",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1396005,
+    1852662,
+    -2541944
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC017",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1191672,
+    573167,
+    -661259
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC018",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -183422,
+    -218337,
+    -102225
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC019",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -2533736,
+    1877278,
+    -1172055
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC020",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -503953,
+    648077,
+    -1315407
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC021",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1512074,
+    1504406,
+    -1809566
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC022",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -307040,
+    392681,
+    -796850
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC023",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    793556,
+    -552233,
+    -613812
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC024",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1484530,
+    938231,
+    -583253
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC025",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -37650,
+    -336657,
+    -314680
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC026",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1073700,
+    1544519,
+    -1802825
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC027",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    252197,
+    -407069,
+    -1180669
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC028",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -211450,
+    -21405,
+    -502867
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC029",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1241544,
+    749879,
+    -949045
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC030",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -385569,
+    442551,
+    -920525
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC031",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1062828,
+    1978622,
+    -2936687
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC032",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1082769,
+    1141012,
+    -1409746
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC033",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    825394,
+    -646145,
+    -802718
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC034",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -332323,
+    261655,
+    -892636
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC035",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1543672,
+    1201030,
+    -921895
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC036",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    823413,
+    -475204,
+    -764654
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC037",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -972342,
+    1174835,
+    -1968430
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC038",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1363852,
+    877499,
+    -666161
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC039",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -1501642,
+    1714522,
+    -1936584
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC040",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -899809,
+    1256181,
+    -2196669
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC041",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -693137,
+    232708,
+    -371517
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC042",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    790301,
+    -525057,
+    -859551
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC043",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    890296,
+    -972001,
+    -420060
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC044",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -507665,
+    -373698,
+    163211
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "BC045",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -519455,
+    938726,
+    -2024737
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC046",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    504554,
+    78746,
+    -1901888
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BC047",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -491067,
+    301492,
+    -1122053
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC048",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -590403,
+    163795,
+    -578474
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC049",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    -2054081,
+    2643301,
+    -2681288
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BC050",
+   "label": 1,
+   "set": "test_cars",
+   "logits": [
+    693040,
+    -999109,
+    -254880
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH001",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    366543,
+    -809720,
+    -398354
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH002",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    107514,
+    -464113,
+    -381456
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH003",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    534064,
+    -768204,
+    -355564
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH004",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    185298,
+    -101902,
+    -557925
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH005",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -6098,
+    2985,
+    -438026
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH006",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    526300,
+    -752638,
+    -565757
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH007",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    589973,
+    -240656,
+    -875561
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH008",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    88088,
+    -35615,
+    -633587
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH009",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -377287,
+    266658,
+    -808595
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH010",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    489614,
+    -336270,
+    -634493
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH011",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    392161,
+    -720068,
+    -433080
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH012",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -405293,
+    -139858,
+    -15834
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "BH013",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    626121,
+    -801754,
+    -378827
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH014",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    115463,
+    -278903,
+    -310316
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH015",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    289162,
+    -197678,
+    -800632
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH016",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -621420,
+    83425,
+    -125783
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH017",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -307796,
+    54617,
+    -271475
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "BH018",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    142724,
+    -23068,
+    -580118
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH019",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    681448,
+    -671416,
+    -484516
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH020",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    463851,
+    -87184,
+    -845338
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH021",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -339986,
+    420996,
+    -874957
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH022",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -123843,
+    75535,
+    -462886
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH023",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    611990,
+    -611562,
+    -502075
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH024",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    -15071,
+    227200,
+    -1073965
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH025",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    740873,
+    -407362,
+    -784563
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH026",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    535617,
+    -473531,
+    -455906
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH027",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    771767,
+    -757254,
+    -398273
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH028",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    563843,
+    -779561,
+    -379982
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BH029",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    450422,
+    -235511,
+    -644931
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BH030",
+   "label": 1,
+   "set": "test_halm_unseen",
+   "logits": [
+    336393,
+    -220006,
+    -585016
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BT001",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2338073,
+    1917692,
+    -1245894
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT002",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -939859,
+    967164,
+    -1226193
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT003",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1869649,
+    1395015,
+    -1311172
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT004",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1920701,
+    1644424,
+    -1524290
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT005",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1648652,
+    1652941,
+    -1872363
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT006",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1853747,
+    2190915,
+    -2048649
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT007",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1626501,
+    1435094,
+    -1732623
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT008",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -343133,
+    -121696,
+    -211067
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "BT009",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1385383,
+    1357214,
+    -1397899
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT010",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2929929,
+    3217539,
+    -3021993
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT011",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3390197,
+    3366232,
+    -2885473
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT012",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1719733,
+    1679610,
+    -1635789
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT013",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1650473,
+    1954540,
+    -2464183
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT014",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1807517,
+    1938308,
+    -2258219
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT015",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2359874,
+    1899396,
+    -1774672
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT016",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1131208,
+    992358,
+    -978718
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT017",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1605814,
+    1575320,
+    -1589283
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT018",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1540790,
+    1142686,
+    -1298235
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT019",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2390902,
+    2410580,
+    -2301752
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT020",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1529468,
+    1531989,
+    -2199489
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT021",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1104857,
+    1287247,
+    -1582117
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT022",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -776678,
+    26463,
+    -223814
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT023",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -570675,
+    1093369,
+    -1574624
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT024",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1725001,
+    1855960,
+    -1748221
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT025",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -957979,
+    1790683,
+    -2832124
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT026",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2329947,
+    3395015,
+    -3680514
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT027",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -795363,
+    -223101,
+    -150431
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "BT028",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1466210,
+    3214389,
+    -4100761
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT029",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2067044,
+    2066936,
+    -2117714
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT030",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -651384,
+    757986,
+    -1339431
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT031",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1832343,
+    1477915,
+    -1442687
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT032",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2210540,
+    2538239,
+    -2327461
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT033",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -601872,
+    396541,
+    -422149
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT034",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1284555,
+    938019,
+    -924064
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT035",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1701863,
+    1712280,
+    -1755400
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT036",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1660512,
+    1284110,
+    -812841
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT037",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -907847,
+    708111,
+    -1057366
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT038",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2826568,
+    2651015,
+    -2179771
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT039",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -13330,
+    934520,
+    -2018385
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT040",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -640412,
+    561379,
+    -1249266
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT041",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1432265,
+    1336070,
+    -1357181
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT042",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -39775,
+    10434,
+    -1454773
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "BT043",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1863754,
+    2596486,
+    -2857108
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT044",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1372259,
+    1877263,
+    -2063068
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT045",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -927113,
+    1528930,
+    -2074614
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT046",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2570331,
+    2635485,
+    -2248778
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT047",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1325251,
+    1198708,
+    -1539494
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT048",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2405416,
+    3175909,
+    -3346327
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT049",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -795446,
+    924508,
+    -1331542
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT050",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2515386,
+    2763087,
+    -2959811
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT051",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3905228,
+    2462482,
+    -1338833
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT052",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1928191,
+    2272892,
+    -2629979
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT053",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1499103,
+    1148957,
+    -1287900
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT054",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -811120,
+    353776,
+    -632314
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT055",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1380739,
+    1594998,
+    -1893095
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT056",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2105373,
+    1651888,
+    -1396569
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT057",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2091054,
+    1085736,
+    -648094
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT058",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2028264,
+    1631218,
+    -1206209
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT059",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1474957,
+    1490656,
+    -1473104
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT060",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2269798,
+    2451942,
+    -2296824
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT061",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2209714,
+    2300591,
+    -2195697
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT062",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1418086,
+    1094121,
+    -1613390
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT063",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1276395,
+    365310,
+    -190234
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT064",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -784170,
+    194391,
+    -266104
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT065",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -401893,
+    840247,
+    -1821276
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT066",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2051717,
+    1314838,
+    -812943
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT067",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2038689,
+    2284808,
+    -2205476
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT068",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2679112,
+    2386575,
+    -2041748
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT069",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1901568,
+    2164636,
+    -2342321
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT070",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1283902,
+    680695,
+    -508490
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT071",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2463269,
+    2415011,
+    -2174027
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT072",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1021768,
+    1267489,
+    -1585529
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT073",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1475001,
+    1543373,
+    -1971653
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT074",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3148339,
+    2734171,
+    -2500938
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT075",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3028816,
+    2495313,
+    -1733989
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT076",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2002302,
+    2015302,
+    -2060540
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT077",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2304924,
+    2642979,
+    -2828839
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT078",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1570433,
+    1556853,
+    -1303504
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT079",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -641424,
+    902534,
+    -1820573
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT080",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3484530,
+    3399739,
+    -3101787
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT081",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2870380,
+    2791073,
+    -2347813
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT082",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3640599,
+    3481331,
+    -2744798
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT083",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -731853,
+    1065225,
+    -1659697
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT084",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -500746,
+    1269582,
+    -1921894
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT085",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3233398,
+    2730854,
+    -1957502
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT086",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -686691,
+    246139,
+    -479452
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT087",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1058214,
+    661260,
+    -970863
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT088",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1362605,
+    1421151,
+    -1998522
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT089",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1996595,
+    2388975,
+    -2632224
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT090",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1992707,
+    1720310,
+    -1315286
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT091",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -2531128,
+    2643564,
+    -2553189
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT092",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3143802,
+    3542114,
+    -3510577
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT093",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1862616,
+    680876,
+    -292657
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT094",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -3385211,
+    3006442,
+    -2219531
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT095",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -741920,
+    1009649,
+    -1864092
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT096",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -763736,
+    342419,
+    -615632
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT097",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1028142,
+    1373595,
+    -1797720
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT098",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1475423,
+    1690592,
+    -2004225
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT099",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -1172968,
+    928488,
+    -1327676
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "BT100",
+   "label": 1,
+   "set": "test",
+   "logits": [
+    -583653,
+    689110,
+    -1171485
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "DC001",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -2254953,
+    -2949898,
+    2670847
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC002",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -499236,
+    -1431490,
+    513946
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC003",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    187871,
+    -2844364,
+    759171
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC004",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -865385,
+    -1581536,
+    1052211
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC005",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1209715,
+    -2026545,
+    1451172
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC006",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1051562,
+    -2101322,
+    1405257
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC007",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1408658,
+    -3270365,
+    2345258
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC008",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    346879,
+    -725775,
+    -217486
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DC009",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -878345,
+    -1432970,
+    1020601
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC010",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1117769,
+    -2334975,
+    1532171
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC011",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1334907,
+    -2151349,
+    1684442
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC012",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1472193,
+    -1088659,
+    995857
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC013",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    758314,
+    -442090,
+    -632371
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DC014",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -2153530,
+    -1376356,
+    1736331
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC015",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -154859,
+    -695590,
+    -137023
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC016",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1299624,
+    -2013204,
+    1543018
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC017",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -581644,
+    -2623059,
+    1217895
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC018",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -200562,
+    -2006774,
+    737793
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC019",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1472283,
+    -3343756,
+    2392951
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC020",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -670777,
+    -3322384,
+    1793247
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC021",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    842745,
+    -507814,
+    -749019
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DC022",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -388264,
+    -1357743,
+    664348
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC023",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -994153,
+    -1329403,
+    916053
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC024",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -190761,
+    -692944,
+    48173
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC025",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -221238,
+    250291,
+    -672046
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "DC026",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    358644,
+    -1107027,
+    -43414
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DC027",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -201040,
+    -1635315,
+    367954
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC028",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1118798,
+    -2011378,
+    1451796
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC029",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -2232832,
+    -2480251,
+    2460287
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC030",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1599109,
+    -2127519,
+    1852618
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC031",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1401052,
+    -3284174,
+    2203177
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC032",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    92983,
+    -1281405,
+    67230
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC033",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    25595,
+    -651350,
+    -60972
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC034",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1315330,
+    -1217384,
+    1201170
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC035",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1008437,
+    -779185,
+    634837
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC036",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1427459,
+    -1441735,
+    1304183
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC037",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1369847,
+    -1698899,
+    942979
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC038",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -834836,
+    -1917774,
+    1096568
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC039",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -990156,
+    -1133842,
+    866466
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC040",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1035790,
+    -2114505,
+    1483069
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC041",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -2199215,
+    -454569,
+    1128948
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC042",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -584044,
+    -844256,
+    498874
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC043",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -739870,
+    -1015508,
+    614256
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC044",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    275613,
+    -2168209,
+    410139
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC045",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -2341940,
+    -2341077,
+    2236828
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC046",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    848457,
+    -666660,
+    -801528
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DC047",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -2090446,
+    -2032233,
+    2096322
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC048",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    156817,
+    -910550,
+    70496
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC049",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -961001,
+    -2007119,
+    1245326
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DC050",
+   "label": 2,
+   "set": "test_cars",
+   "logits": [
+    -1645040,
+    -813702,
+    949024
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH001",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    270026,
+    -621525,
+    -254181
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH002",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -1429204,
+    -557858,
+    916217
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH003",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    287362,
+    -588105,
+    -139831
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH004",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    124854,
+    -430940,
+    -327195
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH005",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    92571,
+    -299241,
+    -361714
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH006",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    181120,
+    -841427,
+    -67825
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH007",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    169191,
+    -572697,
+    -193363
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH008",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -903911,
+    -311821,
+    428468
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH009",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -767278,
+    -387820,
+    495695
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH010",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    30313,
+    -106254,
+    -572065
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH011",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    351732,
+    -521542,
+    -164857
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH012",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    557545,
+    -616596,
+    -436700
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH013",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    67008,
+    -352714,
+    -267665
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH014",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -1380684,
+    -374491,
+    748277
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH015",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    836739,
+    -608502,
+    -626540
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH016",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    32120,
+    -522731,
+    -46321
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH017",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -158919,
+    -495738,
+    107548
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH018",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -28220,
+    -616974,
+    77729
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH019",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    500992,
+    -333107,
+    -700219
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH020",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    418760,
+    -302057,
+    -653356
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH021",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    126395,
+    -104501,
+    -615216
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH022",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -49517,
+    -604999,
+    72101
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH023",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -775220,
+    -231922,
+    278127
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DH024",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    359773,
+    -516734,
+    -436598
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH025",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -241571,
+    -14477,
+    -375254
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH026",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -68694,
+    -196889,
+    -309071
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH027",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    66053,
+    -279171,
+    -312611
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH028",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    158609,
+    -509939,
+    -43615
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH029",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    817125,
+    -699932,
+    -534858
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DH030",
+   "label": 2,
+   "set": "test_halm_unseen",
+   "logits": [
+    -31257,
+    -643918,
+    183149
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT001",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -637096,
+    -2215529,
+    1157721
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT002",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1603936,
+    -102188,
+    540928
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT003",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1070492,
+    -1534662,
+    1089866
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT004",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -940198,
+    -1133567,
+    982834
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT005",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -564320,
+    -1917907,
+    939535
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT006",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -2073507,
+    -2504215,
+    2339379
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT007",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    136770,
+    -1062151,
+    -313597
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DT008",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1250526,
+    -470572,
+    592709
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT009",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1719654,
+    -2043161,
+    1797081
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT010",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1528680,
+    -1772640,
+    1555474
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT011",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    45087,
+    -1141001,
+    390981
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT012",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1502225,
+    -1233415,
+    1198487
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT013",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1947741,
+    -2877611,
+    2520613
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT014",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1331143,
+    -345271,
+    586503
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT015",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1944024,
+    -1378804,
+    1753840
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT016",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1425697,
+    -830914,
+    991581
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT017",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1878493,
+    -1176605,
+    1524529
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT018",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1228286,
+    -1254292,
+    1027315
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT019",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -861367,
+    -2159680,
+    1383892
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT020",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1811515,
+    -1476915,
+    1572211
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT021",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1083571,
+    -1313658,
+    1090800
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT022",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1797057,
+    -1578841,
+    1696578
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT023",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -869606,
+    -2537830,
+    1794916
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT024",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1226785,
+    -503038,
+    585690
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT025",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -860234,
+    -1275485,
+    725349
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT026",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1294200,
+    -612590,
+    806921
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT027",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -672746,
+    -964623,
+    572315
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT028",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1308156,
+    -2100602,
+    1615858
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT029",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -2566717,
+    -2440635,
+    2698116
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT030",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -902941,
+    -1902667,
+    1348751
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT031",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -688657,
+    -1321109,
+    926694
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT032",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1821693,
+    -1922432,
+    1812106
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT033",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    114676,
+    -392839,
+    -87267
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DT034",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1019263,
+    -2781649,
+    1895734
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT035",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -858409,
+    -1445017,
+    1028730
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT036",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1358811,
+    -1187610,
+    1192883
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT037",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1406679,
+    -659748,
+    777294
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT038",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1034220,
+    -835062,
+    752379
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT039",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1520870,
+    -30760,
+    453604
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT040",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -635109,
+    -1786071,
+    1031978
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT041",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -645994,
+    -1698481,
+    902695
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT042",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -252474,
+    -2128283,
+    907158
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT043",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1210373,
+    -1923568,
+    1537490
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT044",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1367463,
+    -273412,
+    509835
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT045",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -957047,
+    -633524,
+    571743
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT046",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -881158,
+    -1672151,
+    1204608
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT047",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1250607,
+    15378,
+    266394
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT048",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1607297,
+    -988043,
+    1013972
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT049",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -116358,
+    -23272,
+    -992236
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DT050",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1031039,
+    -1758592,
+    1308122
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT051",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -836729,
+    -896030,
+    680627
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT052",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1726452,
+    -7801,
+    591025
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT053",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1067029,
+    -1530438,
+    1111954
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT054",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -836479,
+    -1366150,
+    801537
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT055",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    491178,
+    -2057795,
+    77535
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DT056",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1632918,
+    -3198833,
+    2638287
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT057",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -850531,
+    -781315,
+    721502
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT058",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -350808,
+    -1096841,
+    435478
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT059",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -311265,
+    -1075961,
+    313677
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT060",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -158727,
+    -583535,
+    -264445
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DT061",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -498690,
+    -1424210,
+    810323
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT062",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1131777,
+    -938296,
+    813990
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT063",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1403850,
+    -1688503,
+    1381037
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT064",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1711166,
+    -737648,
+    1030748
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT065",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1131014,
+    -2814101,
+    1954874
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT066",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1126941,
+    -1362292,
+    1080446
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT067",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1742775,
+    -1005018,
+    1181439
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT068",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1118385,
+    -2163115,
+    1489342
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT069",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -997768,
+    -2628422,
+    1695445
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT070",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    13138,
+    -1284611,
+    299596
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT071",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1630909,
+    -504213,
+    774118
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT072",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -504775,
+    -1049036,
+    560152
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT073",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1095095,
+    -1679807,
+    1173986
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT074",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -872146,
+    -1518905,
+    1008464
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT075",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1418456,
+    -1214189,
+    1160210
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT076",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1090235,
+    -809442,
+    551706
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT077",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1531162,
+    -2047041,
+    1566540
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT078",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1400512,
+    -477852,
+    676412
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT079",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -964848,
+    -1289847,
+    1174080
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT080",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1199651,
+    -1452659,
+    1255715
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT081",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -612968,
+    -904860,
+    642573
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT082",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    138653,
+    -1103088,
+    192513
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT083",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -780701,
+    -1960480,
+    1214684
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT084",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -867843,
+    -1389162,
+    965653
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT085",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -722524,
+    -756584,
+    529640
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT086",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1218842,
+    -1742693,
+    1452240
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT087",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1583708,
+    -1940556,
+    1616023
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT088",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -634023,
+    -721680,
+    355211
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT089",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -849111,
+    -378941,
+    388255
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT090",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -109863,
+    -1855614,
+    676344
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT091",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    42882,
+    -1315860,
+    94159
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "DT092",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -308795,
+    -807060,
+    173320
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT093",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -527912,
+    -2520171,
+    1439300
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT094",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -2058720,
+    -1046197,
+    1419602
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT095",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -577447,
+    -878897,
+    426331
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT096",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1219994,
+    -1105983,
+    1105045
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT097",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -822923,
+    -2520293,
+    1585498
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT098",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1202333,
+    -2043482,
+    1496265
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT099",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -877191,
+    -1252166,
+    771596
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "DT100",
+   "label": 2,
+   "set": "test",
+   "logits": [
+    -1993511,
+    -1869939,
+    1758436
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH001",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    862807,
+    -900643,
+    -882202
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH002",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -398130,
+    181888,
+    -389950
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH003",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    635027,
+    -1089117,
+    -327692
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH004",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    29364,
+    -234618,
+    -557548
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH005",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    533154,
+    -879964,
+    -626357
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH006",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -514644,
+    -689706,
+    328912
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH007",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    134980,
+    -766646,
+    -228412
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH008",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    772146,
+    -338038,
+    -771923
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH009",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    664800,
+    -485314,
+    -517301
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH010",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    166808,
+    -714387,
+    -256530
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH011",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    156165,
+    -792884,
+    -225271
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH012",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    3106916,
+    -3143063,
+    -1664561
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH013",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    165083,
+    -173681,
+    -584232
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH014",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    26032,
+    -451971,
+    -39038
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH015",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -656714,
+    -208708,
+    12702
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH016",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -76467,
+    -397835,
+    -70230
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH017",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    1185149,
+    -1481805,
+    -564426
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH018",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    792655,
+    -630260,
+    -708586
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH019",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -346694,
+    -769320,
+    202297
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH020",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    788884,
+    -609588,
+    -658799
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH021",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -343670,
+    -209751,
+    -38781
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH022",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -90094,
+    1214,
+    -413503
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH023",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -219546,
+    -253916,
+    -238112
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH024",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    681496,
+    -426679,
+    -711775
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH025",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    442921,
+    -443915,
+    -497355
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH026",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -58792,
+    -50144,
+    -646986
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OH027",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    126233,
+    -625823,
+    -334023
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH028",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    669309,
+    -388829,
+    -838967
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OH029",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    -493993,
+    -88905,
+    -175881
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OH030",
+   "label": 0,
+   "set": "test_halm_unseen",
+   "logits": [
+    692242,
+    -1104995,
+    -622483
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT001",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -10878,
+    -144139,
+    -677371
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT002",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -189811,
+    -1424789,
+    557546
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT003",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    326104,
+    -679611,
+    -291730
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT004",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2735298,
+    -2258993,
+    -1866741
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT005",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1323877,
+    -1159722,
+    -973640
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT006",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -475998,
+    370231,
+    -835176
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT007",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -271446,
+    -417242,
+    -166009
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT008",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    831031,
+    -528583,
+    -1183369
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT009",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    850081,
+    -814750,
+    -835255
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT010",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    849322,
+    -1083395,
+    -940498
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT011",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    681065,
+    -473453,
+    -591761
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT012",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -102200,
+    -275998,
+    -441145
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT013",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    4139,
+    -1256095,
+    222569
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT014",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    610442,
+    -660528,
+    -360366
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT015",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    35454,
+    -293134,
+    -200657
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT016",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    11053,
+    -96200,
+    -528081
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT017",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -902240,
+    -1166731,
+    884636
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT018",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    588529,
+    -651132,
+    -1047331
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT019",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    998667,
+    -1270489,
+    -803012
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT020",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    255972,
+    -412631,
+    -223469
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT021",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1221494,
+    -2159816,
+    -392651
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT022",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -1258047,
+    -799907,
+    924886
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT023",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    559017,
+    -566348,
+    -463157
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT024",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2191745,
+    -2065886,
+    -1800536
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT025",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    674354,
+    45759,
+    -1861153
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT026",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    844668,
+    -903021,
+    -1410336
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT027",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    516325,
+    -494312,
+    -390769
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT028",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1257122,
+    -696986,
+    -1878521
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT029",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -113157,
+    -54323,
+    -345854
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT030",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1184405,
+    -1944719,
+    -525142
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT031",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1173731,
+    -1443075,
+    -1115506
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT032",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    183836,
+    -715920,
+    -300931
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT033",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    500625,
+    -1136051,
+    -204310
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT034",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    757648,
+    -504279,
+    -611911
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT035",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    262818,
+    -593337,
+    -656980
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT036",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2336860,
+    -1701066,
+    -1717452
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT037",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    794892,
+    -1444081,
+    -361413
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT038",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -285086,
+    -1061783,
+    425585
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT039",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    956810,
+    -1456446,
+    -794605
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT040",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    150183,
+    -435850,
+    -559772
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT041",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -44861,
+    154473,
+    -1456771
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT042",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -12168,
+    -1101983,
+    67969
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT043",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    435172,
+    -741289,
+    -1167137
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT044",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -915121,
+    693268,
+    -863210
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT045",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    368022,
+    -336336,
+    -373890
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT046",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -157840,
+    -927250,
+    -140022
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT047",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    554254,
+    -506590,
+    -1108478
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT048",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -1007396,
+    201317,
+    -55500
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT049",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    919128,
+    -1697724,
+    -201223
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT050",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -753903,
+    -614581,
+    361486
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT051",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    875217,
+    -949899,
+    -756412
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT052",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    596109,
+    -1713112,
+    -272059
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT053",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -825374,
+    381910,
+    -395667
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT054",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    219224,
+    -484829,
+    -183479
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT055",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1899332,
+    -1812884,
+    -1169498
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT056",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    970572,
+    -732770,
+    -1072795
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT057",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    752843,
+    -794444,
+    -629892
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT058",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -1035797,
+    -54498,
+    265368
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT059",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -78493,
+    -24443,
+    -809641
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT060",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    489609,
+    -231065,
+    -736767
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT061",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1099705,
+    -1592044,
+    -560851
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT062",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -444977,
+    -716428,
+    281851
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT063",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -309693,
+    114505,
+    -493323
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT064",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    864402,
+    -1013511,
+    -716349
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT065",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    556222,
+    -938016,
+    -605446
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT066",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1104816,
+    -1066716,
+    -978698
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT067",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -73081,
+    -30022,
+    -438232
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT068",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    896248,
+    -981593,
+    -817690
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT069",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -357885,
+    -902339,
+    113565
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT070",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1421106,
+    -2696346,
+    -335248
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT071",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    370729,
+    -503729,
+    -254955
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT072",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    323246,
+    -343247,
+    -411803
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT073",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -10346,
+    -213459,
+    -426553
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT074",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    347429,
+    -1059932,
+    -106125
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT075",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -707568,
+    -1718722,
+    1010509
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT076",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -121266,
+    -375393,
+    -433252
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT077",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2257876,
+    -1729722,
+    -1650847
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT078",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    434331,
+    -958270,
+    -86038
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT079",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    826986,
+    -1585486,
+    -587314
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT080",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    526324,
+    -1263743,
+    -311917
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT081",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1910382,
+    -2052830,
+    -1222589
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT082",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    345737,
+    -1693089,
+    31077
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT083",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2088019,
+    -2989210,
+    -802220
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT084",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -1559969,
+    -850044,
+    889853
+   ],
+   "pred": 2,
+   "int8_pred": 2,
+   "fp32_pred": 2
+  },
+  {
+   "tag": "OT085",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    674259,
+    -896436,
+    -921836
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT086",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    3465434,
+    -2647185,
+    -2941299
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT087",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    390708,
+    -765498,
+    -354106
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT088",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    322794,
+    -163378,
+    -1171649
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT089",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -642380,
+    383669,
+    -524992
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT090",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -33026,
+    -266663,
+    -121375
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT091",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -655497,
+    218643,
+    -362378
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 1
+  },
+  {
+   "tag": "OT092",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    962627,
+    -965779,
+    -1037332
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT093",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1181604,
+    -1034558,
+    -1012863
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT094",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    620797,
+    -423842,
+    -666290
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT095",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    533277,
+    -2254403,
+    243625
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT096",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    1467545,
+    -1634176,
+    -1053096
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT097",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -108905,
+    -47305,
+    -672042
+   ],
+   "pred": 1,
+   "int8_pred": 1,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT098",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2804025,
+    -2553426,
+    -2197053
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT099",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    -177188,
+    -188591,
+    -741642
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  },
+  {
+   "tag": "OT100",
+   "label": 0,
+   "set": "test",
+   "logits": [
+    2372150,
+    -1655090,
+    -1816821
+   ],
+   "pred": 0,
+   "int8_pred": 0,
+   "fp32_pred": 0
+  }
+ ]
+}

@@ -1,0 +1,322 @@
+[
+  {
+    "argmax": 0,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      916040,
+      -828862,
+      -555579
+    ],
+    "input": "G000/input.bin",
+    "input_sha256": "8f34c99ae0282c5473886c6baa0b8cd8eaccdf1468fe04c6b050fe8cf0095a51",
+    "label3": 0,
+    "logits": "G000/logits.bin",
+    "logits_sha256": "9cf3795a7fd91bea61871d1c15187fe95cfd51e9ed71981efddcc0b280472d02",
+    "matched_tensors": 76,
+    "name": "G000",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/hard_neg/step2_carsdirect/hn_erased_sky/test_00848.jpg",
+    "row_index": 959,
+    "source": "hn_erased_sky",
+    "split": "test"
+  },
+  {
+    "argmax": 0,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      355386,
+      -330031,
+      -490411
+    ],
+    "input": "G001/input.bin",
+    "input_sha256": "dda30f7a3882832a6ebebf5a4a561892b0180d0ff20239c108ea32a573c98e7f",
+    "label3": 0,
+    "logits": "G001/logits.bin",
+    "logits_sha256": "788756417e2990f0cbe445c92eeb4dc66739954f7a377797d3585cd6bfb96568",
+    "matched_tensors": 76,
+    "name": "G001",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/raw_datasets/aod4_mendeley/AOD 4 Dataset for Air Borne Object Detection/AOD 4/Images/test/yt-iftmIPSr39g-0002_jpg.rf.d96442f26e975055ffdbf1c34f125cf8.jpg",
+    "row_index": 8447,
+    "source": "aod4_mendeley",
+    "split": "test"
+  },
+  {
+    "argmax": 1,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -939859,
+      967164,
+      -1226193
+    ],
+    "input": "G002/input.bin",
+    "input_sha256": "6ff1efccf0c7af0cbafb574436e0ca64b1ad1283887443cdbec62ede0a5e1228",
+    "label3": 1,
+    "logits": "G002/logits.bin",
+    "logits_sha256": "4a8ce083e694cadb5ea7714c059535270901b6262d79327dd15d53a5572e86ff",
+    "matched_tensors": 76,
+    "name": "G002",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/raw_datasets/bird_only_rf/train/images/voladoras57_jpg.rf.a8459be628e18a8f21171ba1484caa10.jpg",
+    "row_index": 4267,
+    "source": "bird_only_rf",
+    "split": "test"
+  },
+  {
+    "argmax": 1,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -932421,
+      840013,
+      -1303566
+    ],
+    "input": "G003/input.bin",
+    "input_sha256": "712a117e1ad06478bf4e87d12976e44c4a19b0a021b8bd0bce06c9590ed053e4",
+    "label3": 1,
+    "logits": "G003/logits.bin",
+    "logits_sha256": "95e16d7edb9e76abd5792fded7da6a9b921adefb1299d016b85b0e65b2c8cc68",
+    "matched_tensors": 76,
+    "name": "G003",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/raw_datasets/bird_only_rf/train/images/voladorasatardecer61_jpg.rf.7c7f64b58b2a628254a28896030bb171.jpg",
+    "row_index": 4217,
+    "source": "bird_only_rf",
+    "split": "test"
+  },
+  {
+    "argmax": 2,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -849797,
+      -1514770,
+      912376
+    ],
+    "input": "G004/input.bin",
+    "input_sha256": "e1aaea5066868c3b3a3d7460378ff6484da938da10a880957226ff4566d4cfb7",
+    "label3": 2,
+    "logits": "G004/logits.bin",
+    "logits_sha256": "808a863dfdd111dc45aef2b3e37436e86f6865f5100f63cdfb7cdac5019e775f",
+    "matched_tensors": 76,
+    "name": "G004",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/raw_datasets/pathikg_drone_detection_dataset/train_00003977.jpg",
+    "row_index": 7250,
+    "source": "pathikg_drone",
+    "split": "test"
+  },
+  {
+    "argmax": 2,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -438254,
+      -1083411,
+      627351
+    ],
+    "input": "G005/input.bin",
+    "input_sha256": "891a22f947414f2defc30e531629ac4c730a913fae50b3097713387af771051d",
+    "label3": 2,
+    "logits": "G005/logits.bin",
+    "logits_sha256": "c2d51ff5e2bf69dbaf4b3ebd81e623e696e347da8828dd56074478ae0dba8de1",
+    "matched_tensors": 76,
+    "name": "G005",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/raw_datasets/pathikg_drone_detection_dataset/train_00030212.jpg",
+    "row_index": 918,
+    "source": "pathikg_drone",
+    "split": "test"
+  },
+  {
+    "argmax": 1,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -782996,
+      1136419,
+      -1462884
+    ],
+    "input": "G006/input.bin",
+    "input_sha256": "fef9615e3d84e84863ab387a91fac54130c93af13ce6186d3a259ded799819bb",
+    "label3": 1,
+    "logits": "G006/logits.bin",
+    "logits_sha256": "097795420547b036e8c7e9e471423b2cdb9e4b23e960aec20c63d705a3d5ac91",
+    "matched_tensors": 76,
+    "name": "G006",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/CARS/class1_B/BirdsCrop_IBERBIRDS_Ciconia_nigra_257_0.jpg",
+    "row_index": 470,
+    "source": "CARS",
+    "split": "test_cars"
+  },
+  {
+    "argmax": 1,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -571021,
+      1057924,
+      -1870568
+    ],
+    "input": "G007/input.bin",
+    "input_sha256": "d412e61504fc70458ff32524254770fc32b2d1aa447beaac1cc56b692120f24b",
+    "label3": 1,
+    "logits": "G007/logits.bin",
+    "logits_sha256": "8094d17b1fa46bf42d1de0a52330d6d271fdf26f02cd28540d48b185e636be4b",
+    "matched_tensors": 76,
+    "name": "G007",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/CARS/class1_B/total_frames_frame_00698.png",
+    "row_index": 2632,
+    "source": "CARS",
+    "split": "test_cars"
+  },
+  {
+    "argmax": 0,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      669761,
+      -475282,
+      -714819
+    ],
+    "input": "G008/input.bin",
+    "input_sha256": "32bc344c2a94625e04ad3a380527cb5f0c4cc1a049e13591d2f43374a12015b3",
+    "label3": 2,
+    "logits": "G008/logits.bin",
+    "logits_sha256": "fd2709e0164ceff05889f81664e130d48e40ecdeb5c119c8f86bf5ff26b70b7e",
+    "matched_tensors": 76,
+    "name": "G008",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/CARS/class2_D/single_drone_476.png",
+    "row_index": 8678,
+    "source": "CARS",
+    "split": "test_cars"
+  },
+  {
+    "argmax": 2,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -76259,
+      -978962,
+      10506
+    ],
+    "input": "G009/input.bin",
+    "input_sha256": "0432f6e7fdd874b539371306e10aa3d63d6143f7895e2e3737bc386b3f48d7f0",
+    "label3": 2,
+    "logits": "G009/logits.bin",
+    "logits_sha256": "26c51fd830e0d536aa467a4a26a4c80970b6ba6a5406ab26442e738bd6400630",
+    "matched_tensors": 76,
+    "name": "G009",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/CARS/class2_D/single_drone_bigger_223.png",
+    "row_index": 8805,
+    "source": "CARS",
+    "split": "test_cars"
+  },
+  {
+    "argmax": 2,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -356622,
+      -640186,
+      120112
+    ],
+    "input": "G010/input.bin",
+    "input_sha256": "c2719092b729566fad9ad3071af06421d5b7898215b39a87a900f285885d85cd",
+    "label3": 0,
+    "logits": "G010/logits.bin",
+    "logits_sha256": "22a081f03cfee9ca613b8d81b037a4f4ebeb0ef62a1702089a86b1e9147da87d",
+    "matched_tensors": 76,
+    "name": "G010",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/halmstad/frames/V_HELICOPTER_041_f050.jpg",
+    "row_index": 7508,
+    "source": "halmstad",
+    "split": "test_halm_unseen"
+  },
+  {
+    "argmax": 0,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      422504,
+      -341312,
+      -533670
+    ],
+    "input": "G011/input.bin",
+    "input_sha256": "a17f67930a3fd50de598f4efd52547fb96817ad7a5a14b9b45727601315a1527",
+    "label3": 1,
+    "logits": "G011/logits.bin",
+    "logits_sha256": "dc9ea7f84206b9cd8ba64cc03e6a5f53cf2e9c1ed29c839bedc0301e73a465a4",
+    "matched_tensors": 76,
+    "name": "G011",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/halmstad/frames/V_BIRD_030_f000.jpg",
+    "row_index": 1961,
+    "source": "halmstad",
+    "split": "test_halm_unseen"
+  },
+  {
+    "argmax": 0,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      644851,
+      -982004,
+      -184381
+    ],
+    "input": "G012/input.bin",
+    "input_sha256": "02834306d6126ba4c6261c84f44c71910822bed1aea4a330e9e63e5f54650a0f",
+    "label3": 2,
+    "logits": "G012/logits.bin",
+    "logits_sha256": "ef9b209ff28d28fe4454b1cb1d8653952a2ffa19bf622fa5e2314a70a046deb3",
+    "matched_tensors": 76,
+    "name": "G012",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/halmstad/frames/V_DRONE_096_f230.jpg",
+    "row_index": 5695,
+    "source": "halmstad",
+    "split": "test_halm_unseen"
+  },
+  {
+    "argmax": 0,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -4766,
+      -599146,
+      -14805
+    ],
+    "input": "G013/input.bin",
+    "input_sha256": "bfcff64785e88678e5f49204c44b5444854eee6075c59280be96843f595c8bb0",
+    "label3": 2,
+    "logits": "G013/logits.bin",
+    "logits_sha256": "a676240eb5a90ef43f4727b15064df325fb4c006e9d23f6f96d3065913566947",
+    "matched_tensors": 76,
+    "name": "G013",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/halmstad/frames/V_DRONE_015_f220.jpg",
+    "row_index": 3127,
+    "source": "halmstad",
+    "split": "test_halm_unseen"
+  },
+  {
+    "argmax": 2,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -287760,
+      -352256,
+      167462
+    ],
+    "input": "G014/input.bin",
+    "input_sha256": "d5656aafeab22726d1503e114c8d62f4bd174763ff559b27796639d8177a85de",
+    "label3": 2,
+    "logits": "G014/logits.bin",
+    "logits_sha256": "9dd846faa6303f8f0e84a8ed4bb1e5447125c74ac1050dbf0d4088ac5179817d",
+    "matched_tensors": 76,
+    "name": "G014",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/dut_anti_uav/raw/test/img/00816.jpg",
+    "row_index": 815,
+    "source": "dut_anti_uav",
+    "split": "test_dut"
+  },
+  {
+    "argmax": 2,
+    "cpp_all_tensors_match": true,
+    "expected_logits": [
+      -364399,
+      -915639,
+      334975
+    ],
+    "input": "G015/input.bin",
+    "input_sha256": "135a568696521effbbaaeb08b861c05cd059a21799ccefb2ae3c1299dd3145cc",
+    "label3": 2,
+    "logits": "G015/logits.bin",
+    "logits_sha256": "3ca44ce3367c560a7e86c1606b839fac2d6504e8cabc12e6a4b0bdb2d8641e9f",
+    "matched_tensors": 76,
+    "name": "G015",
+    "original_path": "/media/pglab/HDD1/DRDO_BvsD/ayush_clean/ext_raw/dut_anti_uav/raw/test/img/01101.jpg",
+    "row_index": 1100,
+    "source": "dut_anti_uav",
+    "split": "test_dut"
+  }
+]
