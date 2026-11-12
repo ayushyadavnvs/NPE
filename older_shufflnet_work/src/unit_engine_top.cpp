@@ -11,17 +11,16 @@ void unit_engine_top(hls::stream<ap_uint<64> > &weights_in,
 #pragma HLS INTERFACE mode = s_axilite port = n_layers bundle = CTRL
 #pragma HLS INTERFACE mode = s_axilite port = return bundle = CTRL
 
-  static uword_t X[UNIT_BUF_X_WORDS];
+  static uword_t X[2][UNIT_BUF_X_HALF]; // even / odd word banks
   static uword_t T1[UNIT_BUF_T1_WORDS];
   static uword_t T2[UNIT_BUF_T2_WORDS];
   static uword_t B1[UNIT_BUF_B1_WORDS];
   static uword_t B2[UNIT_BUF_B2_WORDS];
+  // unit_pw reads and writes both banks in the same cycle (see units.h).
+#pragma HLS ARRAY_PARTITION variable = X dim = 1 complete
 #pragma HLS BIND_STORAGE variable = X type = ram_t2p impl = uram
-  // Merge-on-write in unit_pw stores four X words per output pair: two
-  // banks (even / odd words) of true dual-port memory take them at II = 1.
-#pragma HLS ARRAY_PARTITION variable = X type = cyclic factor = 2
 #pragma HLS BIND_STORAGE variable = T1 type = ram_t2p impl = uram
-  // The pointwise engine writes two words per cycle into T1 or B1.
+  // The pointwise engine writes two words per cycle into T1.
 #pragma HLS BIND_STORAGE variable = B1 type = ram_t2p impl = bram
 #pragma HLS BIND_STORAGE variable = B2 type = ram_t2p impl = bram
   static pw_wword_t PW_W[UNIT_PW_WORDS];
@@ -45,7 +44,7 @@ load_pool_map:
     int part = i % 3; // which 64-bit third of the pixel
     if (part == 0)
       px = feat_in.read();
-    X[i] = px.range(64 * part + 63, 64 * part);
+    x_write(X, i, px.range(64 * part + 63, 64 * part));
   }
 
   // Up to conv5; the head's logits are checked through bird_drone_accel.
@@ -65,7 +64,7 @@ stream_out:
 #pragma HLS LOOP_TRIPCOUNT min = 588 max = 9408 avg = 1176
     uword_t word;
     switch (last.dst) {
-    case BUF_X: word = X[i]; break;
+    case BUF_X: word = x_read(X, i); break;
     case BUF_T1: word = T1[i]; break;
     case BUF_T2: word = T2[i]; break;
     case BUF_B1: word = B1[i]; break;

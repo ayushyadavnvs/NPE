@@ -47,7 +47,7 @@ static int out_words(const unit_layer_t &L) {
 }
 
 // Testbench copies of the engine memories for the layer-by-layer run.
-static uword_t X[UNIT_BUF_X_WORDS], T1[UNIT_BUF_T1_WORDS], T2[UNIT_BUF_T2_WORDS],
+static uword_t X[2][UNIT_BUF_X_HALF], T1[UNIT_BUF_T1_WORDS], T2[UNIT_BUF_T2_WORDS],
     B1[UNIT_BUF_B1_WORDS], B2[UNIT_BUF_B2_WORDS];
 static pw_wword_t PW_W[UNIT_PW_WORDS];
 static dw_wword_t DW_W[UNIT_DW_WORDS];
@@ -56,9 +56,14 @@ static dw_qword_t DW_Q[UNIT_QD_WORDS];
 static fc_wword_t FC_W[UNIT_FC_WORDS];
 static fc_bword_t FC_B;
 
+static uword_t X_lin[UNIT_BUF_X_WORDS]; // X with the two banks interleaved
+
 static const uword_t *dst_buf(int id) {
   switch (id) {
-  case BUF_X: return X;
+  case BUF_X:
+    for (int i = 0; i < UNIT_BUF_X_WORDS; i++)
+      X_lin[i] = x_read(X, i);
+    return X_lin;
   case BUF_T1: return T1;
   case BUF_T2: return T2;
   case BUF_B1: return B1;
@@ -130,7 +135,8 @@ int main(int argc, char **argv) {
     // 1. Layer by layer, every tensor.
     if (!quick) {
       for (size_t i = 0; i < pool.size(); i++)
-        X[i / UW].range(8 * (i % UW) + 7, 8 * (i % UW)) = pool[i];
+        X[(i / UW) & 1][(i / UW) >> 1].range(8 * (i % UW) + 7, 8 * (i % UW)) =
+            pool[i];
       const char *first_bad = 0;
       for (int l = 0; l <= conv5; l++) {
         const unit_layer_t &L = UNIT_PROGRAM[l];

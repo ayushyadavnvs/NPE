@@ -10,7 +10,7 @@
 #include <random>
 #include <vector>
 
-static uword_t X[UNIT_BUF_X_WORDS], T1[UNIT_BUF_T1_WORDS],
+static uword_t X[2][UNIT_BUF_X_HALF], T1[UNIT_BUF_T1_WORDS],
     T2[UNIT_BUF_T2_WORDS], B1[UNIT_BUF_B1_WORDS], B2[UNIT_BUF_B2_WORDS];
 static fc_wword_t FC_W[UNIT_FC_WORDS];
 static fc_bword_t FC_B;

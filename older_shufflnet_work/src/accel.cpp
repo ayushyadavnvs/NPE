@@ -9,17 +9,16 @@
 // in class order.
 static void net_engine(hls::stream<stem_pix_t> &pool_in, UNIT_W_PARAMS,
                        hls::stream<logit_t> &logits_out) {
-  static uword_t X[UNIT_BUF_X_WORDS];
+  static uword_t X[2][UNIT_BUF_X_HALF]; // even / odd word banks
   static uword_t T1[UNIT_BUF_T1_WORDS];
   static uword_t T2[UNIT_BUF_T2_WORDS];
   static uword_t B1[UNIT_BUF_B1_WORDS];
   static uword_t B2[UNIT_BUF_B2_WORDS];
+  // unit_pw reads and writes both banks in the same cycle (see units.h).
+#pragma HLS ARRAY_PARTITION variable = X dim = 1 complete
 #pragma HLS BIND_STORAGE variable = X type = ram_t2p impl = uram
-  // Merge-on-write in unit_pw stores four X words per output pair: two
-  // banks (even / odd words) of true dual-port memory take them at II = 1.
-#pragma HLS ARRAY_PARTITION variable = X type = cyclic factor = 2
 #pragma HLS BIND_STORAGE variable = T1 type = ram_t2p impl = uram
-  // The pointwise engine writes two words per cycle into T1 or B1.
+  // The pointwise engine writes two words per cycle into T1.
 #pragma HLS BIND_STORAGE variable = B1 type = ram_t2p impl = bram
 #pragma HLS BIND_STORAGE variable = B2 type = ram_t2p impl = bram
 
@@ -31,7 +30,7 @@ load_pool_map:
     int part = i % 3; // which 64-bit third of the pixel
     if (part == 0)
       px = pool_in.read();
-    X[i] = px.range(64 * part + 63, 64 * part);
+    x_write(X, i, px.range(64 * part + 63, 64 * part));
   }
   logit_t logits[NUM_CLASSES]; // [0] other, [1] bird, [2] drone
   unit_run(NET_NUM_LAYERS, X, T1, T2, B1, B2, UNIT_W_ARGS, logits);

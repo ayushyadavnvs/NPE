@@ -113,11 +113,13 @@ class UnitImage:
     def _use(self, buf, words):
         self.buf_words[buf] = max(self.buf_words[buf], words)
 
-    def pw_layer(self, name, src, dst, size, cin_g, src_off, src_tot, signed, aux="X",
+    def pw_layer(self, name, src, dst, size, cin_g, src_off, src_tot, signed, merge=False,
                  out_name=None):
-        """dst "X" means merge-on-write: the layer is a unit's pw2, and it writes
-        concat + channel shuffle of (aux, its own output) straight into X, so no
-        separate merge pass and no B2 buffer are needed (see unit_pw)."""
+        """dst "X" writes the first half of each X pixel (2 * cout_g words per
+        pixel). With merge, the layer is a unit's pw2: it writes concat +
+        channel shuffle of (X first half, its own output) straight into X, so
+        no separate merge pass and no B1/B2 buffers are needed (see unit_pw)."""
+        assert not merge or (dst == "X" and cin_g >= 2), "merge-on-write needs cin_g >= 2"
         L = self.L[name]
         assert L["kind"] == "pw" and L["relu"]
         cout, cin = L["cout"], L["cin"]
@@ -136,7 +138,8 @@ class UnitImage:
                 self.pw.append(blk.reshape(-1))
             self.qp.append(self._quant(L, og2 * PW_OUT, PW_OUT))
         self._use(dst, size * size * cout_g * (2 if dst == "X" else 1))
-        self.prog.append(dict(name=out_name or name, kind=KIND_PW, src=src, dst=dst, aux=aux,
+        self.prog.append(dict(name=out_name or name, kind=KIND_PW, src=src, dst=dst, aux="X",
+                              merge=merge,
                               size=size,
                               stride=1, cin_g=cin_g, src_off=src_off, src_tot=src_tot,
                               cout_g=cout_g, w_base=w_base, q_base=q_base, signed=signed))
@@ -186,18 +189,20 @@ class UnitImage:
             hg = cout // 2 // CW
             if down:
                 g = c // CW
+                # pw1 runs before b1.pw, so b1.pw can write branch 1 over the
+                # (fully consumed) unit input in X.
                 self.dw_layer(f"{prefix}.b1.dw", "X", "T2", size, 2)
-                self.pw_layer(f"{prefix}.b1.pw", "T2", "B1", size // 2, g, 0, g, True)
                 self.pw_layer(f"{prefix}.pw1", "X", "T1", size, g, 0, g, False)
+                self.pw_layer(f"{prefix}.b1.pw", "T2", "X", size // 2, g, 0, g, True)
                 self.dw_layer(f"{prefix}.dw", "T1", "T2", size, 2)
                 size //= 2
                 self.pw_layer(f"{prefix}.pw2", "T2", "X", size, hg, 0, hg, True,
-                              aux="B1", out_name=f"{prefix}.out")
+                              merge=True, out_name=f"{prefix}.out")
             else:
                 self.pw_layer(f"{prefix}.pw1", "X", "T1", size, hg, hg, 2 * hg, False)
                 self.dw_layer(f"{prefix}.dw", "T1", "T2", size, 1)
                 self.pw_layer(f"{prefix}.pw2", "T2", "X", size, hg, 0, hg, True,
-                              aux="X", out_name=f"{prefix}.out")
+                              merge=True, out_name=f"{prefix}.out")
             c = cout
         self.out_size, self.out_ch = size, c
         self.num_unit_layers = len(self.prog)
@@ -273,14 +278,14 @@ class UnitImage:
             f"#define UNIT_IDEAL_CYCLES {self.cycles}",
             "",
             "// kind, src, dst, aux, size, stride, cin_g, src_off, src_tot, cout_g,",
-            "// w_base, q_base, in_signed",
+            "// w_base, q_base, in_signed, merge",
             "static const unit_layer_t UNIT_PROGRAM[NET_NUM_LAYERS] = {",
         ]
         for e in self.prog:
-            out.append("    {%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d}, // %s" % (
+            out.append("    {%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d}, // %s" % (
                 e["kind"], BUF[e["src"]], BUF[e["dst"]], BUF[e["aux"]], e["size"], e["stride"],
                 e["cin_g"], e["src_off"], e["src_tot"], e["cout_g"], e["w_base"], e["q_base"],
-                int(e["signed"]), e["name"]))
+                int(e["signed"]), int(e.get("merge", False)), e["name"]))
         out += ["};", "", "#ifndef __SYNTHESIS__",
                 "// Golden tensor name written by each layer (for the testbench).",
                 "static const char *const UNIT_LAYER_NAMES[NET_NUM_LAYERS] = {"]

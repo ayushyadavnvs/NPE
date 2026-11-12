@@ -30,9 +30,9 @@ PW, DW, MERGE, HEAD = 0, 1, 2, 3
 
 def read_program(path):
     text = open(path).read()
-    rows = re.findall(r"\{(\d+(?:, \d+){12})\}, // (\S+)", text)
+    rows = re.findall(r"\{(\d+(?:, \d+){12,13})\}, // (\S+)", text)
     keys = ("kind src dst aux size stride cin_g src_off src_tot cout_g "
-            "w_base q_base signed").split()
+            "w_base q_base signed merge").split()
     return [dict(zip(keys, map(int, r.split(", "))), name=n) for r, n in rows]
 
 
