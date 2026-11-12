@@ -5,7 +5,7 @@ Uses the same per-layer formulas as src/layers/units.h, so with the default
 knobs it reproduces UNIT_IDEAL_CYCLES exactly. Then it estimates what each
 planned change would buy before any RTL is written:
 
-  base        today: one engine at a time, merge pass, dw scans the full map
+  base        the program as generated (merge layers, if any, cost cycles)
   no_merge    concat + shuffle folded into write addresses (merge = 0 cycles)
   dw_skip     stride-2 dw visits only the windows it outputs
   concurrent  pw and dw engines overlap inside a unit (bound: per unit, the

@@ -16,9 +16,12 @@ void unit_engine_top(hls::stream<ap_uint<64> > &weights_in,
   static uword_t T2[UNIT_BUF_T2_WORDS];
   static uword_t B1[UNIT_BUF_B1_WORDS];
   static uword_t B2[UNIT_BUF_B2_WORDS];
-#pragma HLS BIND_STORAGE variable = X type = ram_2p impl = uram
+#pragma HLS BIND_STORAGE variable = X type = ram_t2p impl = uram
+  // Merge-on-write in unit_pw stores four X words per output pair: two
+  // banks (even / odd words) of true dual-port memory take them at II = 1.
+#pragma HLS ARRAY_PARTITION variable = X type = cyclic factor = 2
 #pragma HLS BIND_STORAGE variable = T1 type = ram_t2p impl = uram
-  // The pointwise engine writes two words per cycle into T1, B1 or B2.
+  // The pointwise engine writes two words per cycle into T1 or B1.
 #pragma HLS BIND_STORAGE variable = B1 type = ram_t2p impl = bram
 #pragma HLS BIND_STORAGE variable = B2 type = ram_t2p impl = bram
   static pw_wword_t PW_W[UNIT_PW_WORDS];

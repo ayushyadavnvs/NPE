@@ -113,7 +113,11 @@ class UnitImage:
     def _use(self, buf, words):
         self.buf_words[buf] = max(self.buf_words[buf], words)
 
-    def pw_layer(self, name, src, dst, size, cin_g, src_off, src_tot, signed):
+    def pw_layer(self, name, src, dst, size, cin_g, src_off, src_tot, signed, aux="X",
+                 out_name=None):
+        """dst "X" means merge-on-write: the layer is a unit's pw2, and it writes
+        concat + channel shuffle of (aux, its own output) straight into X, so no
+        separate merge pass and no B2 buffer are needed (see unit_pw)."""
         L = self.L[name]
         assert L["kind"] == "pw" and L["relu"]
         cout, cin = L["cout"], L["cin"]
@@ -131,8 +135,9 @@ class UnitImage:
                 blk[:n] = w[o0:o0 + n, ig * CW:(ig + 1) * CW]
                 self.pw.append(blk.reshape(-1))
             self.qp.append(self._quant(L, og2 * PW_OUT, PW_OUT))
-        self._use(dst, size * size * cout_g)
-        self.prog.append(dict(name=name, kind=KIND_PW, src=src, dst=dst, aux="X", size=size,
+        self._use(dst, size * size * cout_g * (2 if dst == "X" else 1))
+        self.prog.append(dict(name=out_name or name, kind=KIND_PW, src=src, dst=dst, aux=aux,
+                              size=size,
                               stride=1, cin_g=cin_g, src_off=src_off, src_tot=src_tot,
                               cout_g=cout_g, w_base=w_base, q_base=q_base, signed=signed))
         self.cycles += size * size * n_og2 * cin_g
@@ -186,13 +191,13 @@ class UnitImage:
                 self.pw_layer(f"{prefix}.pw1", "X", "T1", size, g, 0, g, False)
                 self.dw_layer(f"{prefix}.dw", "T1", "T2", size, 2)
                 size //= 2
-                self.pw_layer(f"{prefix}.pw2", "T2", "B2", size, hg, 0, hg, True)
-                self.merge(f"{prefix}.out", "B1", size, hg, hg)
+                self.pw_layer(f"{prefix}.pw2", "T2", "X", size, hg, 0, hg, True,
+                              aux="B1", out_name=f"{prefix}.out")
             else:
                 self.pw_layer(f"{prefix}.pw1", "X", "T1", size, hg, hg, 2 * hg, False)
                 self.dw_layer(f"{prefix}.dw", "T1", "T2", size, 1)
-                self.pw_layer(f"{prefix}.pw2", "T2", "B2", size, hg, 0, hg, True)
-                self.merge(f"{prefix}.out", "X", size, hg, 2 * hg)
+                self.pw_layer(f"{prefix}.pw2", "T2", "X", size, hg, 0, hg, True,
+                              aux="X", out_name=f"{prefix}.out")
             c = cout
         self.out_size, self.out_ch = size, c
         self.num_unit_layers = len(self.prog)
@@ -259,7 +264,7 @@ class UnitImage:
             f"#define UNIT_LOAD_WORDS {self.load_words()}",
             "",
             "// Feature buffer sizes in 8-channel words.",
-        ] + [f"#define UNIT_BUF_{k}_WORDS {v}" for k, v in B.items()] + [
+        ] + [f"#define UNIT_BUF_{k}_WORDS {max(v, 1)}" for k, v in B.items()] + [
             "",
             f"// Unit output: s4u3.out, {self.out_size}x{self.out_size}x{self.out_ch}.",
             f"#define UNIT_OUT_SIZE {self.out_size}",

@@ -18,12 +18,13 @@
 // A "group" below always means one such 8-channel word.
 //   X   unit input and output (in place)    T1  pw1 output
 //   T2  depthwise output                     B1  branch 1 output (downsample)
-//   B2  pw2 output
+//   B2  unused since merge-on-write (kept for the generic merge op)
 // Downsample unit: b1.dw X->T2, b1.pw T2->B1, pw1 X->T1, dw(s2) T1->T2,
-//                  pw2 T2->B2, merge(B1, B2)->X
-// Basic unit:      pw1 X[second half]->T1, dw T1->T2, pw2 T2->B2,
-//                  merge(X[first half], B2)->X
-// The merge writes out[2i] = b1[i], out[2i+1] = b2[i] (concat + shuffle).
+//                  pw2 T2->X merged with B1
+// Basic unit:      pw1 X[second half]->T1, dw T1->T2,
+//                  pw2 T2->X merged with X[first half]
+// The merged write puts out[2i] = b1[i], out[2i+1] = b2[i] (concat +
+// shuffle) straight into X, so no separate merge pass runs (see unit_pw).
 // Head:            conv5 X->T1 (7x7x1024), then GAP + fc on T1 -> NUM_CLASSES
 //                  logits.
 
@@ -164,10 +165,22 @@ load_fc_bias:
 
 // Pointwise 1x1 conv + ReLU requant. One input word (8 channels) per cycle
 // against 16 output channels; after cin_g cycles the 16 sums are requantized
-// and written as two output words in the same cycle (T1/B1/B2 are true
+// and written as two output words in the same cycle (T1/B1 are true
 // dual-port memories, and this engine only writes them).
-// Iteration order: pixel, then output pair (16 channels = 2 output words),
-// then input group.
+// Iteration order: pixel, then output pair (16 channels = 2 output words,
+// highest pair first), then input group.
+//
+// dst == BUF_X is merge-on-write, used for a unit's pw2: instead of writing
+// its own output to a separate buffer for a later concat + shuffle pass, the
+// layer writes the shuffled unit output straight into X:
+//   X[pixel][k] byte 2i   = branch-1 channel i      (aux: X first half or B1)
+//   X[pixel][k] byte 2i+1 = this layer's channel i
+// so output pair j (b2 words 2j, 2j+1) fills X words 4j .. 4j+3 and needs
+// branch-1 words 2j, 2j+1, which are read in the pair's first input cycle.
+// In a basic unit branch 1 is the first half of X itself; walking the pairs
+// from the highest down means pair j only overwrites X words >= 4j, which no
+// lower pair still has to read (they read words < 2j). X is split into two
+// banks (even / odd words), so the four writes of a pair are two per bank.
 inline void unit_pw(const unit_layer_t &layer, UNIT_BUF_PARAMS,
                     const pw_wword_t PW_W[UNIT_PW_WORDS],
                     const pw_qword_t PW_Q[UNIT_QP_WORDS]) {
@@ -175,24 +188,40 @@ inline void unit_pw(const unit_layer_t &layer, UNIT_BUF_PARAMS,
   const int num_pixels = layer.size * layer.size;
   const int num_out_pairs = (layer.cout_g + 1) / 2; // 16-channel blocks
   const int total_iters = num_pixels * num_out_pairs * layer.cin_g;
+  const bool merge = (layer.dst == BUF_X);
+  const bool b1_in_x = (layer.aux == BUF_X);
+  const int out_stride = merge ? 2 * layer.cout_g : layer.cout_g;
+  const int b1_stride = b1_in_x ? 2 * layer.cout_g : layer.cout_g;
   acc_t acc[PW_OUT]; // running sums of the 16 output channels
 #pragma HLS ARRAY_PARTITION variable = acc complete
-  // Every output word is written exactly once, so there is no real
-  // write-after-write hazard between iterations.
+  // Every output word is written exactly once, and in merge mode no X word is
+  // read after it is overwritten (see above), so there is no real hazard.
+#pragma HLS DEPENDENCE variable = X inter false
 #pragma HLS DEPENDENCE variable = T1 inter false
 #pragma HLS DEPENDENCE variable = B1 inter false
-#pragma HLS DEPENDENCE variable = B2 inter false
-  int out_pair = 0, in_group = 0;
-  int src_addr = layer.src_off, weight_addr = layer.w_base;
-  int dst_base = 0; // first output word of the current pixel
+  int out_pair = num_out_pairs - 1, in_group = 0;
+  int src_base = layer.src_off;  // first input word of the current pixel
+  int dst_base = 0;              // first output word of the current pixel
+  int b1_base = 0;               // first branch-1 word of the current pixel
+  int w_pair = layer.w_base + out_pair * layer.cin_g; // weights of out_pair
+  uword_t b1_lo = 0, b1_hi = 0;  // branch-1 words 2j, 2j+1 (merge only)
 pw_loop:
   for (int i = 0; i < total_iters; i++) {
 #pragma HLS PIPELINE II = 1
     // min: stage-4 pw (49 x 6 x 12); max: conv5 (49 x 64 x 24);
     // avg: all pointwise iterations / 36 pointwise layers.
 #pragma HLS LOOP_TRIPCOUNT min = 3528 max = 75264 avg = 6794
+    // The last pair of an odd cout_g has only one real word.
+    const bool has_second = (2 * out_pair + 1 < layer.cout_g);
+    if (merge && in_group == 0) {
+      int a = b1_base + 2 * out_pair;
+      b1_lo = b1_in_x ? X[a] : B1[a];
+      if (has_second)
+        b1_hi = b1_in_x ? X[a + 1] : B1[a + 1];
+    }
+    int src_addr = src_base + in_group;
     uword_t in_word = (layer.src == BUF_X) ? X[src_addr] : T2[src_addr];
-    pw_wword_t weights = PW_W[weight_addr];
+    pw_wword_t weights = PW_W[w_pair + in_group];
     pw_qword_t quant = PW_Q[layer.q_base + out_pair];
     ap_uint<8 * PW_OUT> out_bytes; // 16 requantized outputs
   pw_out_ch:
@@ -215,36 +244,53 @@ pw_loop:
                        q_mult<PW_OUT>(quant, oc), q_shift<PW_OUT>(quant, oc));
     }
     if (in_group == layer.cin_g - 1) {
-      int dst_addr = dst_base + 2 * out_pair;
-      // The last pair of an odd cout_g has only one real word.
-      bool has_second = (2 * out_pair + 1 < layer.cout_g);
       uword_t out_lo = out_bytes.range(8 * UW - 1, 0);
       uword_t out_hi = out_bytes.range(16 * UW - 1, 8 * UW);
-      if (layer.dst == BUF_T1) {
-        T1[dst_addr] = out_lo;
-        if (has_second)
-          T1[dst_addr + 1] = out_hi;
-      } else if (layer.dst == BUF_B1) {
-        B1[dst_addr] = out_lo;
-        if (has_second)
-          B1[dst_addr + 1] = out_hi;
+      if (merge) {
+        // X words 4j .. 4j+3 (only 4j, 4j+1 for a single-word pair): word
+        // 4j+m interleaves half (m & 1) of branch-1 / own word 2j + m/2.
+        int x_addr = dst_base + 4 * out_pair;
+      pw_merge_word:
+        for (int m = 0; m < 4; m++) {
+          uword_t b1w = (m < 2) ? b1_lo : b1_hi;
+          uword_t b2w = (m < 2) ? out_lo : out_hi;
+          int half = m & 1;
+          uword_t w;
+        pw_merge_byte:
+          for (int byte = 0; byte < UW; byte++) {
+            int lane = 4 * half + byte / 2;
+            w.range(8 * byte + 7, 8 * byte) =
+                (byte & 1) ? b2w.range(8 * lane + 7, 8 * lane)
+                           : b1w.range(8 * lane + 7, 8 * lane);
+          }
+          if (m < 2 || has_second)
+            X[x_addr + m] = w;
+        }
       } else {
-        B2[dst_addr] = out_lo;
-        if (has_second)
-          B2[dst_addr + 1] = out_hi;
+        int dst_addr = dst_base + 2 * out_pair;
+        if (layer.dst == BUF_T1) {
+          T1[dst_addr] = out_lo;
+          if (has_second)
+            T1[dst_addr + 1] = out_hi;
+        } else {
+          B1[dst_addr] = out_lo;
+          if (has_second)
+            B1[dst_addr + 1] = out_hi;
+        }
       }
     }
-    // Advance (pixel, out_pair, in_group).
-    weight_addr++;
-    src_addr++;
+    // Advance (pixel, out_pair descending, in_group).
     if (++in_group == layer.cin_g) {
       in_group = 0;
-      src_addr -= layer.cin_g; // same pixel again for the next out_pair
-      if (++out_pair == num_out_pairs) {
-        out_pair = 0;
-        weight_addr = layer.w_base;
-        src_addr += layer.src_tot; // next pixel
-        dst_base += layer.cout_g;
+      if (out_pair == 0) {
+        out_pair = num_out_pairs - 1;
+        w_pair = layer.w_base + out_pair * layer.cin_g;
+        src_base += layer.src_tot; // next pixel
+        dst_base += out_stride;
+        b1_base += b1_stride;
+      } else {
+        out_pair--;
+        w_pair -= layer.cin_g;
       }
     }
   }
