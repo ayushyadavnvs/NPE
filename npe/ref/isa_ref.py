@@ -77,12 +77,23 @@ class Machine:
         if I.raw_out:
             assert np.abs(acc).max() < 2 ** 31, "raw output exceeds int32"
             return acc
+        lo, hi = self._clamp(I)
+        if I.epi == isa.EPI_ADD:   # residual: b * Mb joins before the rounding
+            assert np.abs(acc).max(initial=0) < 2 ** 31, "accumulator exceeds int32"
+            b = self.read(I.b_buf, I.b_base, I.o_h, I.o_w, I.o_c, I.b_pix, I.b_off)
+            y = (acc * P["M"] + b * P["Mb"] + (np.int64(1) << (P["S"] - 1))) >> P["S"]
+            return np.clip(y, lo, hi)
+        return _requant(acc, P["M"], P["S"], lo, hi)
+
+    @staticmethod
+    def _clamp(I):
+        """Output range: the type's, narrowed by the activation."""
         lo, hi = _range(I.o_bits, I.o_signed)
         if I.act == isa.ACT_RELU:
             lo = max(lo, 0)
         elif I.act == isa.ACT_RELU6:
-            lo, hi = max(lo, 0), min(hi, int(P["relu6_q"]))
-        return _requant(acc, P["M"], P["S"], lo, hi)
+            lo, hi = max(lo, 0), min(hi, I.act_max)
+        return lo, hi
 
     def _pool_max(self, a, I):
         lo, _ = _range(I.a_bits, I.a_signed)
@@ -105,7 +116,7 @@ class Machine:
             out[..., 0::2] = b
             out[..., 1::2] = r
             r = out
-        elif I.epi != isa.EPI_NONE:
+        elif I.epi not in (isa.EPI_NONE, isa.EPI_ADD):
             raise NotImplementedError(f"epilogue {I.epi}")
         self.write(I.o_buf, I.o_base, r, I.o_pix, I.o_off)
         return r

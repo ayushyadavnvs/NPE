@@ -19,12 +19,19 @@ Semantics (the NumPy reference in npe/ref/isa_ref.py is the definition):
   op POOL_AVG  reserved (step 2).
   op GAP       per-channel sum over H x W, int32 out into buffer V (the
                1/(H*W) is folded into the next layer's scale).
-  op ADD       reserved (step 2): out = requant(A * ma) + requant(B * mb).
+  op ADD       reserved (a standalone add; residuals use the ADD epilogue).
 
   epilogue INTERLEAVE  out channel 2i = B channel i, 2i + 1 = result channel
                i (concat + channel shuffle of two branches, no extra pass).
                The output view may alias B (in place).
-  epilogue ADD reserved (step 2, residual add fused into the producer).
+  epilogue ADD residual add fused into a CONV: with b the B operand channel
+               (b_signed), out = clamp((acc * M + b * Mb + 2^(S-1)) >> S),
+               acc = conv + bias, M, Mb, S per output channel. The clamp
+               (activation included) applies to the sum. The output view may
+               be the B view itself (in place).
+
+  act RELU6    clamp to [0, act_max]; act_max is 6.0 in the output's
+               quantized scale.
 
   Precision: a_in_bits / w_bits / a_out_bits in {4, 8}; 32 for an int32
   tensor (GAP output, raw logits). Requant clamps to the out range:
@@ -52,6 +59,7 @@ class Instr:
     op: int = OP_CONV
     epi: int = EPI_NONE
     act: int = ACT_NONE
+    act_max: int = 0     # RELU6 upper clamp (quantized 6.0)
     # geometry
     kh: int = 1
     kw: int = 1
@@ -78,6 +86,7 @@ class Instr:
     b_base: int = 0
     b_pix: int = 0
     b_off: int = 0
+    b_signed: int = 0
     # output
     o_buf: int = BUF_A
     o_base: int = 0

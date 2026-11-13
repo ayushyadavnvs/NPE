@@ -3,13 +3,14 @@
 
 #include "npe_decode.h"
 
-// out = clamp((acc * M + 2^(S-1)) >> S, lo, hi). Same rule as the reference
-// (npe/ref/isa_ref.py, _requant). The result is returned as a raw byte: for a
-// signed output it is the two's complement int8.
+// out = clamp((acc * M + extra + 2^(S-1)) >> S, lo, hi). Same rule as the
+// reference (npe/ref/isa_ref.py). extra is b * Mb for the ADD epilogue, else
+// 0. The result is returned as a raw byte: for a signed output it is the
+// two's complement int8.
 inline ap_uint<8> npe_requant(npe_acc_t acc, ap_int<32> M, ap_uint<6> S, int lo,
-                              int hi) {
+                              int hi, ap_int<48> extra = 0) {
 #pragma HLS INLINE
-  ap_int<64> prod = (ap_int<64>)acc * M;
+  ap_int<64> prod = (ap_int<64>)acc * M + extra;
   ap_int<64> rounded = (prod + ((ap_int<64>)1 << (S - 1))) >> S;
   if (rounded < lo)
     rounded = lo;
@@ -33,7 +34,7 @@ inline int npe_read_row(const npe_dec_t &d, int buf, int a_addr, int b_addr) {
 #pragma HLS INLINE
   if (d.a_buf == buf)
     return a_addr >> 1;
-  if (d.interleave && d.b_buf == buf)
+  if (d.use_b && d.b_buf == buf)
     return b_addr >> 1;
   return 0;
 }
@@ -49,8 +50,9 @@ inline void npe_bank_write(npe_word_t buf[2][N], bool en0, int row0,
     buf[1][row1] = v1;
 }
 
-// Dense convolution: any kernel size, stride and padding, with the optional
-// INTERLEAVE epilogue.
+// Dense convolution: any kernel size, stride and padding, with an optional
+// epilogue: INTERLEAVE, or ADD (residual; only in builds with NPE_HAS_ADD,
+// so models without residuals do not pay its P multipliers).
 //
 // Each clock cycle multiplies one input word (P channels) by a P x P block of
 // weights and adds the P results to P running sums: P * P multipliers. One
@@ -70,6 +72,10 @@ inline void npe_bank_write(npe_word_t buf[2][N], bool en0, int row0,
 //               The output may be the same memory as B (in place): walking j
 //               from the highest down, words 2j and 2j+1 are written only
 //               after every B word that still has to be read lies below them.
+//   add         result word j = requant(acc) with B word j added in before
+//               the rounding (npe_requant). B word j is read in the first
+//               input cycle of word j and the output is written in its last,
+//               so the output may be the B view itself (in place).
 //
 // Memory ports per cycle: each buffer is read at one row (both banks) and
 // written at most one word per bank. Words 2j and 2j+1 are neighbours, so
@@ -135,7 +141,7 @@ conv_loop:
       in_word = image_word;
     else
       in_word = (a_addr & 1) ? od[a_sel] : ev[a_sel];
-    if (d.interleave && first_in)
+    if (d.use_b && first_in)
       b_word = (b_addr & 1) ? od[b_sel] : ev[b_sel];
 
     // Multiply-accumulate: P output channels x P input channels.
@@ -157,7 +163,17 @@ conv_loop:
       npe_acc_t bias = quant.range(32 * o + 31, 32 * o);
       ap_int<32> M = quant.range(32 * NPE_P + 32 * o + 31, 32 * NPE_P + 32 * o);
       ap_uint<6> S = quant.range(64 * NPE_P + 8 * o + 5, 64 * NPE_P + 8 * o);
-      result.range(8 * o + 7, 8 * o) = npe_requant(sum + bias, M, S, d.lo, d.hi);
+      ap_int<48> extra = 0; // ADD epilogue: b * Mb joins before the rounding
+#if NPE_HAS_ADD
+      if (d.add) {
+        ap_uint<8> braw = b_word.range(8 * o + 7, 8 * o);
+        ap_int<9> b = d.b_signed ? (ap_int<9>)(ap_int<8>)braw : (ap_int<9>)braw;
+        ap_int<32> Mb = quant.range(72 * NPE_P + 32 * o + 31, 72 * NPE_P + 32 * o);
+        extra = b * Mb;
+      }
+#endif
+      result.range(8 * o + 7, 8 * o) =
+          npe_requant(sum + bias, M, S, d.lo, d.hi, extra);
     }
 
     // Interleave B and the result, byte by byte, into two words.

@@ -86,7 +86,7 @@ void npe_top(hls::stream<npe_load_beat_t> &load_in,
     npe_load<8 * NPE_P, NPE_WD_WORDS>(load_in, WD, count);
     return;
   case NPE_LOAD_Q:
-    npe_load<72 * NPE_P, NPE_Q_WORDS>(load_in, Q, count);
+    npe_load<npe_qword_t::width, NPE_Q_WORDS>(load_in, Q, count);
     return;
   default:
     break;

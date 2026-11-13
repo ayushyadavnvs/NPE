@@ -10,11 +10,12 @@ enum { NPE_ACT_NONE, NPE_ACT_RELU, NPE_ACT_RELU6 };
 enum { NPE_PAD_ZERO, NPE_PAD_CONST };
 enum { NPE_BUF_IN, NPE_BUF_OUT, NPE_BUF_S0, NPE_BUF_A, NPE_BUF_B, NPE_BUF_C, NPE_BUF_V };
 
-// One layer. 39 x 16-bit fields; field order = binary program order.
+// One layer. 41 x 16-bit fields; field order = binary program order.
 struct npe_instr_t {
   uint16_t op;
   uint16_t epi;
   uint16_t act;
+  uint16_t act_max;
   uint16_t kh;
   uint16_t kw;
   uint16_t sh;
@@ -38,6 +39,7 @@ struct npe_instr_t {
   uint16_t b_base;
   uint16_t b_pix;
   uint16_t b_off;
+  uint16_t b_signed;
   uint16_t o_buf;
   uint16_t o_base;
   uint16_t o_h;
@@ -53,7 +55,7 @@ struct npe_instr_t {
   uint16_t q_base;
 };
 
-#define NPE_INSTR_FIELDS 39
+#define NPE_INSTR_FIELDS 41
 
 // X(name, index) for every field: field i is bits [16i + 15 : 16i] of a
 // packed instruction word.
@@ -61,41 +63,43 @@ struct npe_instr_t {
   X(op, 0) \
   X(epi, 1) \
   X(act, 2) \
-  X(kh, 3) \
-  X(kw, 4) \
-  X(sh, 5) \
-  X(sw, 6) \
-  X(pad_t, 7) \
-  X(pad_l, 8) \
-  X(pad_b, 9) \
-  X(pad_r, 10) \
-  X(pad_mode, 11) \
-  X(groups, 12) \
-  X(a_buf, 13) \
-  X(a_base, 14) \
-  X(a_h, 15) \
-  X(a_w, 16) \
-  X(a_c, 17) \
-  X(a_pix, 18) \
-  X(a_off, 19) \
-  X(a_signed, 20) \
-  X(a_bits, 21) \
-  X(b_buf, 22) \
-  X(b_base, 23) \
-  X(b_pix, 24) \
-  X(b_off, 25) \
-  X(o_buf, 26) \
-  X(o_base, 27) \
-  X(o_h, 28) \
-  X(o_w, 29) \
-  X(o_c, 30) \
-  X(o_pix, 31) \
-  X(o_off, 32) \
-  X(o_signed, 33) \
-  X(o_bits, 34) \
-  X(raw_out, 35) \
-  X(w_bits, 36) \
-  X(w_base, 37) \
-  X(q_base, 38)
+  X(act_max, 3) \
+  X(kh, 4) \
+  X(kw, 5) \
+  X(sh, 6) \
+  X(sw, 7) \
+  X(pad_t, 8) \
+  X(pad_l, 9) \
+  X(pad_b, 10) \
+  X(pad_r, 11) \
+  X(pad_mode, 12) \
+  X(groups, 13) \
+  X(a_buf, 14) \
+  X(a_base, 15) \
+  X(a_h, 16) \
+  X(a_w, 17) \
+  X(a_c, 18) \
+  X(a_pix, 19) \
+  X(a_off, 20) \
+  X(a_signed, 21) \
+  X(a_bits, 22) \
+  X(b_buf, 23) \
+  X(b_base, 24) \
+  X(b_pix, 25) \
+  X(b_off, 26) \
+  X(b_signed, 27) \
+  X(o_buf, 28) \
+  X(o_base, 29) \
+  X(o_h, 30) \
+  X(o_w, 31) \
+  X(o_c, 32) \
+  X(o_pix, 33) \
+  X(o_off, 34) \
+  X(o_signed, 35) \
+  X(o_bits, 36) \
+  X(raw_out, 37) \
+  X(w_bits, 38) \
+  X(w_base, 39) \
+  X(q_base, 40)
 
 #endif // NPE_ISA_H_

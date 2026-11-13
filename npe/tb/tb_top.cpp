@@ -31,7 +31,8 @@ int main(int argc, char **argv) {
   uint32_t hdr[5];
   memcpy(hdr, load.data(), sizeof hdr);
   const int n_out = hdr[4];
-  const int bytes[4] = {2 * NPE_INSTR_FIELDS, NPE_P * NPE_P, NPE_P, 9 * NPE_P};
+  const int bytes[4] = {2 * NPE_INSTR_FIELDS, NPE_P * NPE_P, NPE_P,
+                        npe_qword_t::width / 8};
   const int modes[4] = {NPE_LOAD_PROG, NPE_LOAD_W, NPE_LOAD_WD, NPE_LOAD_Q};
   size_t pos = sizeof hdr;
   hls::stream<npe_load_beat_t> load_in;

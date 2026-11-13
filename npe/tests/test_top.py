@@ -1,37 +1,77 @@
-"""ShuffleNet through the engine's top level (npe_top), driven only through
-its AXI streams as a host would, vs the golden logits.
+"""A whole model through the engine's top level (npe_top), driven only through
+its AXI streams as a host would.
 
-  python3 -m npe.tests.test_top [N]     # first N golden images (all if 0)
+  python3 -m npe.tests.test_top [N] [--model shufflenet|mobilenetv2]
+
+shufflenet   the first N golden images (all if 0) vs the golden logits
+mobilenetv2  the MobileNetV2-shaped network on N random images (default 4)
+             vs the reference interpreter
 """
+import argparse
 import os
 import subprocess
 import sys
 
+import numpy as np
+
+from npe.compiler import isa
 from npe.compiler.build import build
 from npe.compiler.lower_shufflenet import OLD, lower
+from npe.ref.isa_ref import Machine
 from npe.tests.test_engine import APDIR, BUILD, NPE
 
 
-def main():
+def shufflenet_case(n):
     from quantize import read_bin  # noqa: E402
-    n = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     layers, pad, _ = read_bin(os.path.join(OLD, "data", "weights.bin"))
     prog, params, names, peak = lower(layers, pad)
-    d = os.path.join(BUILD, "top")
-    build(prog, params, peak, d)
     root = os.path.join(OLD, "data", "golden")
     imgs = sorted(x for x in os.listdir(root) if os.path.isdir(os.path.join(root, x)))
     imgs = imgs[:n] if n else imgs
+    return prog, params, peak, [os.path.join(root, x) for x in imgs]
+
+
+def mobilenetv2_case(n, d):
+    """Random images and their reference logits, in the golden-set layout."""
+    from npe.compiler.lower_mobilenetv2 import build as mnv2
+    prog, params, names, peak, sample = mnv2()
+    rng = np.random.default_rng(1)
+    dirs = []
+    for k in range(n or 4):
+        x = rng.integers(0, 256, sample.shape)
+        logits = Machine(params, peak).run(prog, x).reshape(-1)
+        out = os.path.join(d, "images", f"img{k:02d}")
+        os.makedirs(out, exist_ok=True)
+        x.astype(np.uint8).tofile(os.path.join(out, "input.bin"))
+        logits.astype("<i4").tofile(os.path.join(out, "logits.bin"))
+        dirs.append(out)
+    return prog, params, peak, dirs
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("n", nargs="?", type=int, default=0)
+    ap.add_argument("--model", default="shufflenet", choices=["shufflenet", "mobilenetv2"])
+    a = ap.parse_args()
+    d = os.path.join(BUILD, "top_" + a.model)
+    os.makedirs(d, exist_ok=True)
+    if a.model == "shufflenet":
+        prog, params, peak, dirs = shufflenet_case(a.n)
+    else:
+        prog, params, peak, dirs = mobilenetv2_case(a.n, d)
+    cfg, _ = build(prog, params, peak, d)
+    print(f"{a.model}: {len(prog)} instructions, "
+          f"{sum(I.epi == isa.EPI_ADD for I in prog)} with ADD, NPE_HAS_ADD={cfg['NPE_HAS_ADD']}")
     lst = os.path.join(d, "images.txt")
     with open(lst, "w") as f:
-        f.write("\n".join(os.path.join(root, x) for x in imgs) + "\n")
+        f.write("\n".join(dirs) + "\n")
     exe = os.path.join(d, "tb_top")
     subprocess.check_call(["g++", "-std=c++14", "-O2", "-w", f"-I{d}", f"-I{NPE}/hls",
                            f"-I{NPE}/isa", f"-I{NPE}/tb/shim", f"-I{APDIR}/include",
                            "-o", exe, f"{NPE}/tb/tb_top.cpp", f"{NPE}/hls/npe_top.cpp"])
     r = subprocess.run([exe, os.path.join(d, "load.bin"), lst], capture_output=True, text=True)
-    print(r.stdout.strip())
-    print("TEST PASSED" if r.returncode == 0 else "TEST FAILED")
+    print(r.stdout.strip() or r.stderr.strip())
+    print("TEST PASSED" if r.returncode == 0 else f"TEST FAILED (exit {r.returncode})")
     return r.returncode
 
 

@@ -15,7 +15,8 @@
 // Memory layouts are defined in npe/compiler/pack.py.
 typedef ap_uint<8 * NPE_P> npe_word_t;          // P channels of one pixel
 typedef ap_uint<8 * NPE_P * NPE_P> npe_wword_t; // P x P int8 weights
-typedef ap_uint<72 * NPE_P> npe_qword_t;        // P x (bias, M, S)
+// P x (bias, M, S), plus P x Mb in builds with the ADD epilogue
+typedef ap_uint<(NPE_HAS_ADD ? 104 : 72) * NPE_P> npe_qword_t;
 typedef ap_int<32> npe_acc_t;                   // MAC accumulator
 typedef ap_uint<32 * NPE_P> npe_vword_t;        // P int32 (buffer V)
 

@@ -13,6 +13,9 @@ struct npe_dec_t {
   bool run_gap;      // global average pool (sum) into V
   bool run_fc;       // fully connected: V in, int32 out to OUT
   bool interleave;   // epilogue INTERLEAVE
+  bool add;          // epilogue ADD (residual)
+  bool use_b;        // the epilogue reads operand B
+  bool b_signed;     // operand B bytes are int8 (else uint8)
   // loop bounds
   int out_h, out_w;  // output pixels
   int cin_w, cout_w; // input / output words per pixel that this layer uses
@@ -28,7 +31,7 @@ struct npe_dec_t {
   int a_col_step;    // one output pixel right: stride_w * a_step
   int a_line_step;   // one kernel row down:   a_w * a_step
   int w_per_out;     // weight words per output word: kh * kw * cin_w
-  // operand B (interleave only), same pixel grid as the output
+  // operand B (INTERLEAVE, ADD), same pixel grid as the output
   int b_buf, b_first, b_step;
   // output
   int o_buf, o_first, o_step;
@@ -50,6 +53,9 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.run_gap = (I.op == NPE_OP_GAP);
   d.run_fc = (I.op == NPE_OP_CONV && I.a_buf == NPE_BUF_V && I.raw_out);
   d.interleave = (I.epi == NPE_EPI_INTERLEAVE);
+  d.add = NPE_HAS_ADD && (I.epi == NPE_EPI_ADD);
+  d.use_b = d.interleave || d.add;
+  d.b_signed = I.b_signed;
   d.out_h = I.o_h;
   d.out_w = I.o_w;
   // The image buffer holds one pixel per word, whatever its channel count.
@@ -91,8 +97,10 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   int bits = I.o_bits;
   d.lo = I.o_signed ? -(1 << (bits - 1)) : 0;
   d.hi = I.o_signed ? (1 << (bits - 1)) - 1 : (1 << bits) - 1;
-  if (I.act == NPE_ACT_RELU && d.lo < 0)
+  if ((I.act == NPE_ACT_RELU || I.act == NPE_ACT_RELU6) && d.lo < 0)
     d.lo = 0;
+  if (I.act == NPE_ACT_RELU6 && I.act_max < d.hi)
+    d.hi = I.act_max; // quantized 6.0
   d.w_base = I.w_base;
   d.q_base = I.q_base;
   return d;

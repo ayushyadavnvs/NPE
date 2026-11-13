@@ -3,7 +3,11 @@
 Two suites, each packed and compiled on its own:
   shufflenet  every instruction the engine supports, on one golden image,
               starting from the buffer state the reference had at that point
-  random      random max pools, GAPs, fcs, and dense and depthwise convolutions: kernel sizes 1-5 (also non-square),
+  mobilenetv2 every instruction of the MobileNetV2-shaped network
+              (npe/compiler/lower_mobilenetv2.py), ADD epilogues and ReLU6
+  random      random max pools, GAPs, fcs, and dense and depthwise convolutions
+              (epilogues none / INTERLEAVE / ADD, activations none / ReLU /
+              ReLU6): kernel sizes 1-5 (also non-square),
               strides, asymmetric zero padding, signed / unsigned inputs,
               channel-offset views, plain and INTERLEAVE (also in place),
               and image-input layers with constant padding
@@ -133,15 +137,29 @@ def random_suite(seed, count=80):
             a_base, a_off = P * r(0, 2), P * r(0, 2)
             a_pix = a_off + cin + P * r(0, 2)
             a_signed = r(0, 1)
-        relu = bool(r(0, 1))
-        I = Instr(op=isa.OP_CONV, act=isa.ACT_RELU if relu else isa.ACT_NONE,
+        act = r(0, 2)                       # none, ReLU, ReLU6
+        relu = act != isa.ACT_NONE
+        I = Instr(op=isa.OP_CONV, act=act,
                   kh=kh, kw=kw, sh=sh, sw=sw, pad_t=pt, pad_l=pl, pad_b=pb, pad_r=pr,
                   pad_mode=isa.PAD_CONST if image and r(0, 1) else isa.PAD_ZERO,
                   a_buf=a_buf, a_base=a_base, a_h=ah, a_w=aw, a_c=cin, a_pix=a_pix,
                   a_off=a_off, a_signed=a_signed, o_buf=o_buf, o_base=P * r(0, 2),
                   o_h=oh, o_w=ow, o_c=cout, o_signed=0 if relu else r(0, 1),
                   groups=cin if dw else 1, w_base=len(params))
-        if r(0, 1) and not dw:
+        if act == isa.ACT_RELU6:
+            I.act_max = r(1, 127 if I.o_signed else 255)
+        epi = 0 if dw else r(0, 2)          # none, INTERLEAVE, ADD
+        if epi == isa.EPI_ADD:
+            I.epi, I.b_signed = isa.EPI_ADD, r(0, 1)
+            I.o_off = P * r(0, 1)
+            I.o_pix = I.o_off + cout + P * r(0, 1)
+            if r(0, 1):      # in place: B is exactly the output view
+                I.b_buf, I.b_base, I.b_pix, I.b_off = o_buf, I.o_base, I.o_pix, I.o_off
+            else:
+                I.b_buf, I.b_base = b_buf, P * r(0, 2)
+                I.b_off = P * r(0, 1)
+                I.b_pix = I.b_off + cout + P * r(0, 1)
+        elif epi == isa.EPI_INTERLEAVE:
             I.epi = isa.EPI_INTERLEAVE
             if r(0, 1):      # in place: B is the first half of the output pixel
                 I.b_buf, I.b_base, I.b_pix, I.b_off = o_buf, I.o_base, 2 * cout, 0
@@ -152,11 +170,15 @@ def random_suite(seed, count=80):
         else:
             I.o_off = P * r(0, 1)
             I.o_pix = I.o_off + cout + P * r(0, 1)
-        params.append(dict(w=rng.integers(-128, 128, (cout, 1 if dw else cin, kh, kw)),
-                           bias=rng.integers(-2 ** 15, 2 ** 15, cout),
-                           M=rng.integers(1, 2 ** 31, cout),
-                           S=rng.integers(36, 45, cout) if dw else rng.integers(34, 46, cout),
-                           pad=rng.integers(0, 256, cin)))
+        par = dict(w=rng.integers(-128, 128, (cout, 1 if dw else cin, kh, kw)),
+                   bias=rng.integers(-2 ** 15, 2 ** 15, cout),
+                   M=rng.integers(1, 2 ** 31, cout),
+                   S=rng.integers(36, 45, cout) if dw else rng.integers(34, 46, cout),
+                   pad=rng.integers(0, 256, cin))
+        if epi == isa.EPI_ADD:   # Mb inside int32 needs S <= 30
+            par.update(M=rng.integers(2 ** 14, 2 ** 18, cout), S=rng.integers(27, 31, cout),
+                       Mb=rng.integers(-2 ** 28, 2 ** 28, cout))
+        params.append(par)
         prog.append(I)
         uses = [(I.o_buf, I.o_base + oh * ow * (I.o_pix or I.out_channels())),
                 (I.b_buf, I.b_base + oh * ow * (I.b_pix or cout))]
@@ -213,14 +235,23 @@ def random_suite(seed, count=80):
         if I.a_signed and I.a_buf != isa.BUF_V:
             v = m.buf[I.a_buf]
             v[v > 127] -= 256
+        if I.epi == isa.EPI_ADD and I.b_signed:
+            v = m.buf[I.b_buf]
+            v[v > 127] -= 256
         if isa.BUF_V in m.buf:    # int32 sums small enough that fc fits int32
             m.buf[isa.BUF_V][:] = rng.integers(-2 ** 15, 2 ** 15, len(m.buf[isa.BUF_V]))
     return run_suite("random", prog, params, peak, inp=image, state=state)
 
 
+def mobilenetv2():
+    from npe.compiler.lower_mobilenetv2 import build
+    prog, params, names, peak, sample = build()
+    return run_suite("mobilenetv2", prog, params, peak, inp=sample)
+
+
 def main():
     seed = int(sys.argv[1]) if len(sys.argv) > 1 else 1
-    bad = shufflenet() | random_suite(seed)
+    bad = shufflenet() | mobilenetv2() | random_suite(seed)
     print("TEST FAILED" if bad else "TEST PASSED")
     return 1 if bad else 0
 

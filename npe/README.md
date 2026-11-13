@@ -16,6 +16,7 @@ rationale: the "Generalization plan" section of the project analysis doc.
 | `hls/csynth.tcl` | Vitis HLS synthesis (`vitis_hls -f npe/hls/csynth.tcl` after `build.py`) |
 | `tb/tb_top.cpp`, `tests/test_top.py` | ShuffleNet through `npe_top`'s ports only, vs the golden logits |
 | `tb/tb_run.cpp`, `tests/test_engine_e2e.py` | Whole ShuffleNet on the engine, image in, logits out, vs the golden logits |
+| `compiler/lower_mobilenetv2.py` | MobileNetV2-shaped test network (real layer structure, random calibrated int8 weights): exercises the fused ADD and ReLU6 |
 | `tests/test_shufflenet_isa.py` | ShuffleNet on the generic instructions vs the 104 golden logits |
 
 Run from the repo root:
@@ -26,12 +27,12 @@ python3 -m npe.compiler.lower_shufflenet --list # the 59-instruction program
 python3 -m npe.tests.test_engine                # HLS engine vs reference, CPU only
 python3 -m npe.tests.test_engine_e2e 5          # whole network on the engine, 5 images
 python3 -m npe.tests.test_top 5                 # same, through the AXI top level
+python3 -m npe.tests.test_top --model mobilenetv2  # MobileNetV2-shaped net vs the reference
 python3 -m npe.compiler.build && vitis_hls -f npe/hls/csynth.tcl   # synthesis
 ```
 
-Status: the instruction set expresses the whole ShuffleNetV2, stem and head
-included, and the reference matches all 104 golden logits. The HLS engine runs
-all 59 ShuffleNet instructions (dense conv, depthwise conv, max pool, GAP, fc)
-and reproduces the golden logits end to end, bit-exact on CPU. Not yet
-synthesized. The AXI top level (`npe_top`) loads the program and weights and
-runs images over AXI-Stream.
+Status: the HLS engine runs ShuffleNetV2 end to end (all 104 golden images
+bit-exact through the AXI top level) and a MobileNetV2-shaped network with
+residual blocks (fused ADD epilogue, ReLU6) bit-exact against the reference.
+Synthesized for the KV260 (7c0b738, before ADD): 3.62 ns, every loop II=1.
+The ADD epilogue is built only when the program uses it (NPE_HAS_ADD).

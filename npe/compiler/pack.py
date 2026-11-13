@@ -12,7 +12,9 @@ works on words of P channels and two flat memories:
      A PAD_CONST layer has one more word after its weights: the padding
      value of each input channel in its low P bytes.
   Q  per-output-channel constants. One word = P lanes, laid out as P int32
-     biases, then P int32 multipliers M, then P uint8 shifts S.
+     biases, then P int32 multipliers M, then P uint8 shifts S, and, only in
+     builds whose program uses the ADD epilogue, P int32 residual
+     multipliers Mb (zero for layers without ADD).
      Word q_base + ob serves output channels P * ob .. P * ob + P - 1.
 
   fc   a fully connected layer (1x1 conv reading int32 buffer V, raw int32
@@ -42,7 +44,7 @@ from npe.compiler import isa
 
 P = 8              # channels per word
 W_BYTES = P * P    # one weight word
-Q_BYTES = 9 * P    # one quant word: P * (4 + 4 + 1) bytes
+Q_BYTES = 9 * P    # one quant word: P * (4 + 4 + 1) bytes; + 4P with ADD
 HW_BUFS = [isa.BUF_S0, isa.BUF_A, isa.BUF_B, isa.BUF_C]   # word buffers
 
 
@@ -53,6 +55,10 @@ def is_depthwise(I):
 def is_fc(I):
     return (I.op == isa.OP_CONV and I.a_buf == isa.BUF_V and I.a_bits == 32
             and I.raw_out == 1)
+
+
+def has_add(prog):
+    return any(I.epi == isa.EPI_ADD for I in prog)
 
 
 def supported(I):
@@ -92,18 +98,27 @@ def check(I):
         assert I.a_buf in HW_BUFS
         words(I.a_c, I.a_pix, I.a_off, I.a_base)
     words(I.o_c, I.o_pix, I.o_off, I.o_base)
-    assert I.act in (isa.ACT_NONE, isa.ACT_RELU), "ReLU6 comes with MobileNetV2"
+    assert I.act in (isa.ACT_NONE, isa.ACT_RELU, isa.ACT_RELU6)
+    if I.act == isa.ACT_RELU6:
+        assert 0 < I.act_max < 1 << I.o_bits
     assert I.o_buf in HW_BUFS
     if is_depthwise(I):
         assert I.a_buf != isa.BUF_IN, "depthwise on the image is not supported"
         assert I.pad_mode == isa.PAD_ZERO and I.epi == isa.EPI_NONE
     if I.pad_mode == isa.PAD_CONST:
         assert I.a_c <= P, "constant padding only on a one-word input (the image)"
-    if I.epi == isa.EPI_INTERLEAVE:
+    if I.epi in (isa.EPI_INTERLEAVE, isa.EPI_ADD):
         words(I.b_pix, I.b_off, I.b_base)
         assert I.b_buf in HW_BUFS
         assert I.b_buf != I.a_buf, "A and B operands must be in different buffers"
-    else:
+    if I.epi == isa.EPI_ADD:
+        assert not is_depthwise(I), "ADD is an epilogue of the dense conv unit"
+        if I.b_buf == I.o_buf:   # in place: only over exactly the B view
+            assert (I.b_base + I.b_off, I.b_pix or I.o_c) == \
+                (I.o_base + I.o_off, I.o_pix or I.o_c), "ADD output overlaps B elsewhere"
+        else:
+            assert I.o_buf != I.a_buf, "a plain conv cannot write the buffer it reads"
+    elif I.epi != isa.EPI_INTERLEAVE:
         assert I.epi == isa.EPI_NONE
         assert I.o_buf != I.a_buf, "a plain conv cannot write the buffer it reads"
 
@@ -113,6 +128,7 @@ def pack(prog, params, peak):
     mems: {"W": uint8 [n, W_BYTES], "WD": uint8 [n, P], "Q": uint8 [n, Q_BYTES]},
     cfg: {macro name: value}."""
     W, WD, Q, hw, skipped = [], [], [], [], []
+    add = has_add(prog)
     for n, I in enumerate(prog):
         if not supported(I):
             hw.append(I)
@@ -124,10 +140,10 @@ def pack(prog, params, peak):
             continue
         p = params[I.w_base]
         if is_fc(I):
-            hw.append(pack_fc(I, p, W, Q))
+            hw.append(pack_fc(I, p, W, Q, add))
             continue
         if is_depthwise(I):
-            hw.append(pack_depthwise(I, p, WD, Q))
+            hw.append(pack_depthwise(I, p, WD, Q, add))
             continue
         cin_w = (I.a_c + P - 1) // P
         w = np.zeros((I.o_c, I.kh, I.kw, cin_w * P), np.int64)  # [cout][ky][kx][cin]
@@ -140,7 +156,7 @@ def pack(prog, params, peak):
                 for kx in range(I.kw):
                     for iw in range(cin_w):
                         W.append(w[ch, ky, kx, P * iw:P * iw + P].astype(np.int8).tobytes())
-        quant(p, I.o_c, Q)
+        quant(p, I.o_c, Q, add)
         if I.pad_mode == isa.PAD_CONST:
             pad = np.zeros(W_BYTES, np.uint8)
             pad[:I.a_c] = np.broadcast_to(np.asarray(p["pad"]), I.a_c) & 0xFF
@@ -153,7 +169,7 @@ def pack(prog, params, peak):
         return n + (n & 1)
 
     cfg = {"NPE_P": P, "NPE_W_WORDS": max(len(W), 1), "NPE_WD_WORDS": max(len(WD), 1),
-           "NPE_Q_WORDS": max(len(Q), 1)}
+           "NPE_Q_WORDS": max(len(Q), 1), "NPE_HAS_ADD": int(add)}
     for b in HW_BUFS:
         cfg[f"NPE_BUF_{isa.BUF_NAMES[b]}_WORDS"] = even_words(peak.get(b, 0))
     cfg["NPE_PROG_WORDS"] = max(len(prog), 1)
@@ -165,22 +181,25 @@ def pack(prog, params, peak):
     cfg["NPE_IN_PIXELS"] = max(peak.get(isa.BUF_IN, 0) // cfg["NPE_IN_C"], 1)
     mems = {"W": np.frombuffer(b"".join(W), np.uint8).reshape(-1, W_BYTES),
             "WD": np.frombuffer(b"".join(WD), np.uint8).reshape(-1, P),
-            "Q": np.frombuffer(b"".join(Q), np.uint8).reshape(-1, Q_BYTES)}
+            "Q": np.frombuffer(b"".join(Q), np.uint8).reshape(-1, Q_BYTES + 4 * P * add)}
     return hw, mems, cfg, skipped
 
 
-def quant(p, cout, Q):
-    """Appends the Q words of one layer: bias, M, S of each output channel."""
+def quant(p, cout, Q, add):
+    """Appends the Q words of one layer: bias, M, S (and Mb if the build has
+    ADD) of each output channel."""
     M, S, bias = (np.asarray(p[k]).astype(np.int64) for k in ("M", "S", "bias"))
+    Mb = np.asarray(p.get("Mb", np.zeros(cout))).astype(np.int64)
     assert M.min() >= 0 and M.max() < 2 ** 31 and S.min() >= 1 and S.max() <= 63
-    assert np.abs(bias).max() < 2 ** 31
+    assert np.abs(Mb).max() < 2 ** 31 and np.abs(bias).max() < 2 ** 31
     for ob in range(cout // P):
         ch = slice(P * ob, P * ob + P)
         Q.append(bias[ch].astype("<i4").tobytes() + M[ch].astype("<i4").tobytes()
-                 + S[ch].astype(np.uint8).tobytes())
+                 + S[ch].astype(np.uint8).tobytes()
+                 + (Mb[ch].astype("<i4").tobytes() if add else b""))
 
 
-def pack_fc(I, p, W, Q):
+def pack_fc(I, p, W, Q, add):
     cout_p = -(-I.o_c // P) * P                            # padded to words
     w = np.zeros((cout_p, I.a_c), np.int64)
     w[:I.o_c] = np.asarray(p["w"]).reshape(I.o_c, I.a_c)
@@ -191,12 +210,12 @@ def pack_fc(I, p, W, Q):
             W.append(w[P * ob:P * ob + P, P * iw:P * iw + P].astype(np.int8).tobytes())
     bias = np.zeros(cout_p, np.int64)
     bias[:I.o_c] = np.asarray(p["bias"])
-    quant(dict(bias=bias, M=np.zeros(cout_p), S=np.ones(cout_p)), cout_p, Q)
+    quant(dict(bias=bias, M=np.zeros(cout_p), S=np.ones(cout_p)), cout_p, Q, add)
     assert len(W) < 1 << 16 and q_base < 1 << 16
     return dataclasses.replace(I, w_base=w_base, q_base=q_base)
 
 
-def pack_depthwise(I, p, WD, Q):
+def pack_depthwise(I, p, WD, Q, add):
     w = np.asarray(p["w"]).reshape(I.o_c, I.kh, I.kw)      # one kernel per channel
     assert w.min() >= -128 and w.max() <= 127
     w_base, q_base = len(WD), len(Q)
@@ -204,7 +223,7 @@ def pack_depthwise(I, p, WD, Q):
         for ky in range(I.kh):
             for kx in range(I.kw):
                 WD.append(w[P * cw:P * cw + P, ky, kx].astype(np.int8).tobytes())
-    quant(p, I.o_c, Q)
+    quant(p, I.o_c, Q, add)
     assert len(WD) < 1 << 16 and q_base < 1 << 16
     return dataclasses.replace(I, w_base=w_base, q_base=q_base)
 
