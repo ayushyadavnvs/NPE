@@ -1,10 +1,10 @@
 """Builds everything the engine needs for one model: npe_config.h (sizes the
 hardware) and load.bin (what the host streams into it).
 
-  python3 -m npe.compiler.build [--out DIR] [--no-uram]
+  python3 -m npe.compiler.build [--model shufflenet|mobilenetv2] [--out DIR] [--no-uram]
 
-Today the model is ShuffleNet from the old weights.bin; the ONNX importer
-will replace that front end.
+Models: ShuffleNet from the old weights.bin, or the MobileNetV2-shaped test
+network; the ONNX importer will replace these front ends.
 
 load.bin layout (all little-endian):
   u32 n_instr, n_w, n_wd, n_q, n_out     (words per memory; results per run)
@@ -47,20 +47,33 @@ def build(prog, params, peak, out, no_uram=False):
     return cfg, n_out
 
 
+def load_model(name):
+    """(prog, params, peak) of a model this repo can lower today."""
+    if name == "shufflenet":
+        from quantize import read_bin  # noqa: E402
+        layers, pad, _ = read_bin(os.path.join(OLD, "data", "weights.bin"))
+        prog, params, names, peak = lower(layers, pad)
+    else:
+        from npe.compiler.lower_mobilenetv2 import build as mnv2
+        prog, params, names, peak, _ = mnv2()
+    return prog, params, peak
+
+
 def main():
-    from quantize import read_bin  # noqa: E402
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=os.path.join(ROOT, "npe", "build", "shufflenet_hw"))
+    ap.add_argument("--model", default="shufflenet", choices=["shufflenet", "mobilenetv2"])
+    ap.add_argument("--out", help="default npe/build/<model>_hw")
     ap.add_argument("--no-uram", action="store_true", help="block RAM only (PYNQ-Z2, ZedBoard)")
     a = ap.parse_args()
-    layers, pad, _ = read_bin(os.path.join(OLD, "data", "weights.bin"))
-    prog, params, names, peak = lower(layers, pad)
-    cfg, n_out = build(prog, params, peak, a.out, a.no_uram)
+    out = a.out or os.path.join(ROOT, "npe", "build", f"{a.model}_hw")
+    prog, params, peak = load_model(a.model)
+    cfg, n_out = build(prog, params, peak, out, a.no_uram)
     kb = lambda words, bits: words * bits / 8 / 1024   # noqa: E731
     P = cfg["NPE_P"]
-    print(f"wrote {a.out}/npe_config.h and load.bin: {len(prog)} instructions, {n_out} outputs")
+    q_bits = (104 if cfg["NPE_HAS_ADD"] else 72) * P
+    print(f"wrote {out}/npe_config.h and load.bin: {len(prog)} instructions, {n_out} outputs")
     print(f"  W {kb(cfg['NPE_W_WORDS'], 8 * P * P):.0f} KB, WD {kb(cfg['NPE_WD_WORDS'], 8 * P):.0f} KB, "
-          f"Q {kb(cfg['NPE_Q_WORDS'], 72 * P):.0f} KB, IN {cfg['NPE_IN_PIXELS'] * cfg['NPE_IN_C'] / 1024:.0f} KB")
+          f"Q {kb(cfg['NPE_Q_WORDS'], q_bits):.0f} KB, IN {cfg['NPE_IN_PIXELS'] * cfg['NPE_IN_C'] / 1024:.0f} KB")
     print("  " + ", ".join(f"{b} {kb(cfg[f'NPE_BUF_{b}_WORDS'], 8 * P):.0f} KB"
                            for b in ("S0", "A", "B", "C")) + f", V {kb(cfg['NPE_V_WORDS'], 32 * P):.0f} KB")
 
