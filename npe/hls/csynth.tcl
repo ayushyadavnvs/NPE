@@ -14,7 +14,10 @@ set cfg   [file normalize [env_or NPE_CFG [file join $root build shufflenet_hw]]
 set part  [env_or NPE_PART xck26-sfvc784-2LV-c]
 set clock [env_or NPE_CLOCK_NS 5]
 
-open_project -reset [file join $root build hls_npe]
+# open_project takes a name, not a path: run it from inside npe/build.
+file mkdir [file join $root build]
+cd [file join $root build]
+open_project -reset hls_npe
 set_top npe_top
 add_files [file join $root hls npe_top.cpp] -cflags "-I$cfg -I$root/hls -I$root/isa"
 open_solution -reset sol -flow_target vivado
