@@ -1,0 +1,24 @@
+# Vitis HLS synthesis of the NPE engine for one model build.
+#
+#   python3 -m npe.compiler.build                 # writes npe/build/shufflenet_hw
+#   vitis_hls -f npe/hls/csynth.tcl               # from the repo root
+#
+# Environment overrides: NPE_CFG (build dir with npe_config.h),
+# NPE_PART (default KV260: xck26-sfvc784-2LV-c), NPE_CLOCK_NS (default 5).
+set root [file normalize [file join [file dirname [info script]] ..]]
+proc env_or {name default} {
+  if {[info exists ::env($name)]} { return $::env($name) }
+  return $default
+}
+set cfg   [file normalize [env_or NPE_CFG [file join $root build shufflenet_hw]]]
+set part  [env_or NPE_PART xck26-sfvc784-2LV-c]
+set clock [env_or NPE_CLOCK_NS 5]
+
+open_project -reset [file join $root build hls_npe]
+set_top npe_top
+add_files [file join $root hls npe_top.cpp] -cflags "-I$cfg -I$root/hls -I$root/isa"
+open_solution -reset sol -flow_target vivado
+set_part $part
+create_clock -period $clock
+csynth_design
+exit

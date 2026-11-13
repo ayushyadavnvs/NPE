@@ -156,6 +156,8 @@ def pack(prog, params, peak):
            "NPE_Q_WORDS": max(len(Q), 1)}
     for b in HW_BUFS:
         cfg[f"NPE_BUF_{isa.BUF_NAMES[b]}_WORDS"] = even_words(peak.get(b, 0))
+    cfg["NPE_PROG_WORDS"] = max(len(prog), 1)
+    cfg["NPE_OUT_MAX"] = max(sum(I.o_c for I in prog if I.o_buf == isa.BUF_OUT), 1)
     cfg["NPE_V_WORDS"] = max((peak.get(isa.BUF_V, 0) + P - 1) // P, 1)
     in_c = {I.a_c for n, I in enumerate(prog) if I.a_buf == isa.BUF_IN and n not in skipped}
     assert len(in_c) <= 1, "every layer reading the image must use all its channels"

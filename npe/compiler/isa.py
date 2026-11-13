@@ -119,7 +119,13 @@ def c_header():
         "struct npe_instr_t {",
     ]
     lines += [f"  uint16_t {n};" for n in FIELDS]
-    lines += ["};", "", f"#define NPE_INSTR_FIELDS {len(FIELDS)}", "", "#endif // NPE_ISA_H_", ""]
+    lines += ["};", "", f"#define NPE_INSTR_FIELDS {len(FIELDS)}", "",
+              "// X(name, index) for every field: field i is bits [16i + 15 : 16i] of a",
+              "// packed instruction word.",
+              "#define NPE_INSTR_FIELD_LIST(X) \\"]
+    lines += [f"  X({n}, {i})" + (" \\" if i < len(FIELDS) - 1 else "")
+              for i, n in enumerate(FIELDS)]
+    lines += ["", "#endif // NPE_ISA_H_", ""]
     return "\n".join(lines)
 
 

@@ -55,4 +55,47 @@ struct npe_instr_t {
 
 #define NPE_INSTR_FIELDS 39
 
+// X(name, index) for every field: field i is bits [16i + 15 : 16i] of a
+// packed instruction word.
+#define NPE_INSTR_FIELD_LIST(X) \
+  X(op, 0) \
+  X(epi, 1) \
+  X(act, 2) \
+  X(kh, 3) \
+  X(kw, 4) \
+  X(sh, 5) \
+  X(sw, 6) \
+  X(pad_t, 7) \
+  X(pad_l, 8) \
+  X(pad_b, 9) \
+  X(pad_r, 10) \
+  X(pad_mode, 11) \
+  X(groups, 12) \
+  X(a_buf, 13) \
+  X(a_base, 14) \
+  X(a_h, 15) \
+  X(a_w, 16) \
+  X(a_c, 17) \
+  X(a_pix, 18) \
+  X(a_off, 19) \
+  X(a_signed, 20) \
+  X(a_bits, 21) \
+  X(b_buf, 22) \
+  X(b_base, 23) \
+  X(b_pix, 24) \
+  X(b_off, 25) \
+  X(o_buf, 26) \
+  X(o_base, 27) \
+  X(o_h, 28) \
+  X(o_w, 29) \
+  X(o_c, 30) \
+  X(o_pix, 31) \
+  X(o_off, 32) \
+  X(o_signed, 33) \
+  X(o_bits, 34) \
+  X(raw_out, 35) \
+  X(w_bits, 36) \
+  X(w_base, 37) \
+  X(q_base, 38)
+
 #endif // NPE_ISA_H_
