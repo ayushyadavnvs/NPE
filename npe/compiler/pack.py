@@ -4,7 +4,8 @@ The reference interpreter works on elements and parameter dicts. The engine
 works on words of P channels and four parameter memories. Their widths depend
 on the parallelism knobs of the build (see npe/hls/npe_types.h):
 PO, PI (dense conv output / input words per cycle), PC (depthwise
-channel words per cycle) and RQ (depthwise words requantized per cycle).
+channel words per cycle), RQ and RQC (depthwise / dense conv output words
+requantized per cycle).
 
   W  dense conv weights. One word = PO x PI blocks of P x P int8, the
      weights of one cycle. Layer with cout_w output words, cin_w input words:
@@ -130,12 +131,12 @@ def cdiv(a, b):
     return -(-a // b)
 
 
-def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None):
+def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None):
     """Returns (hw_prog, mems, cfg, skipped).
     mems: {"W", "WD", "Q", "QD": uint8 [words, bytes per word]},
     cfg: {macro name: value}."""
-    rq = rq or pc
-    assert 1 <= rq <= pc
+    rq, rqc = rq or pc, rqc or po
+    assert 1 <= rq <= pc and 1 <= rqc <= po
     nb = 2
     while nb < max(2 * po, pi, pc):
         nb *= 2
@@ -165,7 +166,7 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None):
     def buf_words(elems):   # NB banks, plus NB words of slack for vector reads
         return cdiv(cdiv(elems, P) + nb, nb) * nb
 
-    cfg = {"NPE_P": P, "NPE_PO": po, "NPE_PI": pi, "NPE_PC": pc, "NPE_RQ": rq, "NPE_NB": nb,
+    cfg = {"NPE_P": P, "NPE_PO": po, "NPE_PI": pi, "NPE_PC": pc, "NPE_RQ": rq, "NPE_RQC": rqc, "NPE_NB": nb,
            "NPE_LOG2NB": nb.bit_length() - 1, "NPE_HAS_ADD": int(add)}
     for k in mem:
         cfg[f"NPE_{k}_WORDS"] = max(len(mem[k]), 1)

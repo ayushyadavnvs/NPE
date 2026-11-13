@@ -12,7 +12,7 @@ Two suites, each packed and compiled on its own:
               channel-offset views, plain and INTERLEAVE (also in place),
               and image-input layers with constant padding
 
-  python3 -m npe.tests.test_engine [seed] [--po N] [--pi N] [--pc N] [--rq N]
+  python3 -m npe.tests.test_engine [seed] [--po N] [--pi N] [--pc N] [--rq N] [--rqc N]
 
 The knobs set the engine's parallelism (npe/hls/npe_types.h).
 """
@@ -31,7 +31,7 @@ from npe.ref.isa_ref import Machine
 NPE = os.path.join(ROOT, "npe")
 BUILD = os.path.join(NPE, "build")
 APDIR = os.path.join(BUILD, "hlsap")
-KNOBS = dict(po=1, pi=1, pc=1, rq=0)   # set by main(); rq 0 means rq = pc
+KNOBS = dict(po=1, pi=1, pc=1, rq=0, rqc=0)   # set by main(); rq 0: = pc, rqc 0: = po
 
 
 def image(m, cfg, b):
@@ -51,7 +51,7 @@ def run_suite(name, prog, params, peak, inp=None, state=None):
     """Steps the reference through prog; every supported instruction becomes a
     case. state(m) may randomize the buffers before each instruction."""
     hw, mems, cfg, skipped = pack.pack(prog, params, peak, **KNOBS)
-    d = os.path.join(BUILD, name + "_po{po}_pi{pi}_pc{pc}_rq{rq}".format(**KNOBS))
+    d = os.path.join(BUILD, name + "_po{po}_pi{pi}_pc{pc}_rq{rq}_rqc{rqc}".format(**KNOBS))
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "npe_config.h"), "w") as f:
         f.write(pack.config_header(cfg))
@@ -262,7 +262,7 @@ def main():
     for k in KNOBS:
         ap.add_argument(f"--{k}", type=int, default=KNOBS[k])
     a = ap.parse_args()
-    KNOBS.update(po=a.po, pi=a.pi, pc=a.pc, rq=a.rq)
+    KNOBS.update(po=a.po, pi=a.pi, pc=a.pc, rq=a.rq, rqc=a.rqc)
     seed = a.seed
     bad = shufflenet() | mobilenetv2() | random_suite(seed)
     print("TEST FAILED" if bad else "TEST PASSED")
