@@ -12,7 +12,9 @@ Two suites, each packed and compiled on its own:
               channel-offset views, plain and INTERLEAVE (also in place),
               and image-input layers with constant padding
 
-  python3 -m npe.tests.test_engine [seed]
+  python3 -m npe.tests.test_engine [seed] [--po N] [--pi N] [--pc N]
+
+The knobs set the engine's parallelism (npe/hls/npe_types.h).
 """
 import os
 import struct
@@ -29,6 +31,7 @@ from npe.ref.isa_ref import Machine
 NPE = os.path.join(ROOT, "npe")
 BUILD = os.path.join(NPE, "build")
 APDIR = os.path.join(BUILD, "hlsap")
+KNOBS = dict(po=1, pi=1, pc=1)   # set by main()
 
 
 def image(m, cfg, b):
@@ -47,8 +50,8 @@ def image(m, cfg, b):
 def run_suite(name, prog, params, peak, inp=None, state=None):
     """Steps the reference through prog; every supported instruction becomes a
     case. state(m) may randomize the buffers before each instruction."""
-    hw, mems, cfg, skipped = pack.pack(prog, params, peak)
-    d = os.path.join(BUILD, name)
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak, **KNOBS)
+    d = os.path.join(BUILD, name + "_po{po}_pi{pi}_pc{pc}".format(**KNOBS))
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "npe_config.h"), "w") as f:
         f.write(pack.config_header(cfg))
@@ -78,7 +81,7 @@ def run_suite(name, prog, params, peak, inp=None, state=None):
         n = min(len(img), len(m.buf[isa.BUF_IN]))
         img[:n] = m.buf[isa.BUF_IN][:n] & 0xFF
     with open(path, "wb") as f:
-        f.write(struct.pack("<I", len(cases)) + mems["W"].tobytes() + mems["WD"].tobytes() + mems["Q"].tobytes()
+        f.write(struct.pack("<I", len(cases)) + b"".join(mems[k].tobytes() for k in ("W", "WD", "Q", "QD"))
                 + img.tobytes()
                 + b"".join(cases))
     if not os.path.exists(os.path.join(APDIR, "include", "ap_int.h")):
@@ -89,7 +92,7 @@ def run_suite(name, prog, params, peak, inp=None, state=None):
                            f"-I{NPE}/isa", f"-I{NPE}/tb/shim", f"-I{APDIR}/include", "-o", exe,
                            f"{NPE}/tb/tb_engine.cpp"])
     r = subprocess.run([exe, path], capture_output=True, text=True)
-    print(f"[{name}] {len(prog)} instructions, {len(skipped)} not supported yet; "
+    print(f"[{name} {KNOBS}] {len(prog)} instructions, {len(skipped)} not supported yet; "
           f"{r.stdout.strip().splitlines()[-1] if r.stdout.strip() else 'no output'}")
     if r.returncode:
         print(r.stdout)
@@ -116,8 +119,8 @@ def random_suite(seed, count=80):
     for n in range(count):
         image = n % 4 == 0                  # every 4th case reads the RGB image
         dw = n % 4 == 1 or n % 4 == 2       # half the cases are depthwise
-        cin = in_c if image else P * r(1, 3)
-        cout = cin if dw else P * r(1, 3)
+        cin = in_c if image else P * r(1, 5)
+        cout = cin if dw else P * r(1, 5)
         kh, kw = r(1, 5), r(1, 5)
         sh, sw = r(1, 2), r(1, 2)
         pt, pb, pl, pr = (r(0, k - 1) for k in (kh, kh, kw, kw))
@@ -189,7 +192,7 @@ def random_suite(seed, count=80):
     for n in range(30):                 # max pool, GAP, fc
         kind = n % 3
         a_buf, o_buf = (int(b) for b in rng.permutation(bufs)[:2])
-        c = P * r(1, 3)
+        c = P * r(1, 5)
         a_base, a_off = P * r(0, 2), P * r(0, 2)
         a_pix = a_off + c + P * r(0, 1)
         if kind == 0:
@@ -250,7 +253,14 @@ def mobilenetv2():
 
 
 def main():
-    seed = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("seed", nargs="?", type=int, default=1)
+    for k in KNOBS:
+        ap.add_argument(f"--{k}", type=int, default=1)
+    a = ap.parse_args()
+    KNOBS.update(po=a.po, pi=a.pi, pc=a.pc)
+    seed = a.seed
     bad = shufflenet() | mobilenetv2() | random_suite(seed)
     print("TEST FAILED" if bad else "TEST PASSED")
     return 1 if bad else 0

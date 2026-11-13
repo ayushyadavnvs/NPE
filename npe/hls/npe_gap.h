@@ -1,7 +1,7 @@
 #ifndef NPE_GAP_H_
 #define NPE_GAP_H_
 
-#include "npe_conv.h" // npe_bank_read
+#include "npe_mem.h"
 
 // Global average pool: the int32 sum of each channel over all H x W pixels,
 // written to buffer V (one V word = P sums). The division by H * W is folded
@@ -25,19 +25,14 @@ gap_loop:
 #pragma HLS PIPELINE II = 1
     const bool first = (p == 0);
     const bool last = (p == pixels - 1);
-    npe_word_t ev[4], od[4];
-    npe_bank_read(S0, d.a_buf == NPE_BUF_S0 ? a_addr >> 1 : 0, ev[0], od[0]);
-    npe_bank_read(A, d.a_buf == NPE_BUF_A ? a_addr >> 1 : 0, ev[1], od[1]);
-    npe_bank_read(B, d.a_buf == NPE_BUF_B ? a_addr >> 1 : 0, ev[2], od[2]);
-    npe_bank_read(C, d.a_buf == NPE_BUF_C ? a_addr >> 1 : 0, ev[3], od[3]);
-    int a_sel = d.a_buf - NPE_BUF_S0;
-    npe_word_t in_word = (a_addr & 1) ? od[a_sel] : ev[a_sel];
+    npe_word_t av[NPE_NB], bv[NPE_NB];
+    npe_read_ab(d, S0, A, B, C, a_addr, a_addr, av, bv);
+    npe_word_t in_word = av[0];
 
     npe_vword_t sums;
   gap_lane:
     for (int c = 0; c < NPE_P; c++) {
-      ap_uint<8> raw = in_word.range(8 * c + 7, 8 * c);
-      ap_int<9> x = d.a_signed ? (ap_int<9>)(ap_int<8>)raw : (ap_int<9>)raw;
+      ap_int<9> x = npe_lane(in_word, c, d.a_signed);
       npe_acc_t s = (first ? (npe_acc_t)0 : acc[c]) + x;
       acc[c] = s;
       sums.range(32 * c + 31, 32 * c) = s;

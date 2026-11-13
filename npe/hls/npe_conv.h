@@ -1,89 +1,43 @@
 #ifndef NPE_CONV_H_
 #define NPE_CONV_H_
 
-#include "npe_decode.h"
-
-// out = clamp((acc * M + extra + 2^(S-1)) >> S, lo, hi). Same rule as the
-// reference (npe/ref/isa_ref.py). extra is b * Mb for the ADD epilogue, else
-// 0. The result is returned as a raw byte: for a signed output it is the
-// two's complement int8.
-inline ap_uint<8> npe_requant(npe_acc_t acc, ap_int<32> M, ap_uint<6> S, int lo,
-                              int hi, ap_int<48> extra = 0) {
-#pragma HLS INLINE
-  ap_int<64> prod = (ap_int<64>)acc * M + extra;
-  ap_int<64> rounded = (prod + ((ap_int<64>)1 << (S - 1))) >> S;
-  if (rounded < lo)
-    rounded = lo;
-  if (rounded > hi)
-    rounded = hi;
-  return (ap_uint<8>)rounded;
-}
-
-// Reads row `row` of both banks of a buffer. One read statement per bank.
-template <int N>
-inline void npe_bank_read(const npe_word_t buf[2][N], int row, npe_word_t &even,
-                          npe_word_t &odd) {
-#pragma HLS INLINE
-  even = buf[0][row];
-  odd = buf[1][row];
-}
-
-// Row that buffer `buf` reads this cycle: the A operand's if the instruction
-// reads A from it, operand B's if it reads B from it, else row 0 (unused).
-inline int npe_read_row(const npe_dec_t &d, int buf, int a_addr, int b_addr) {
-#pragma HLS INLINE
-  if (d.a_buf == buf)
-    return a_addr >> 1;
-  if (d.use_b && d.b_buf == buf)
-    return b_addr >> 1;
-  return 0;
-}
-
-// Writes up to one word per bank. One write statement per bank.
-template <int N>
-inline void npe_bank_write(npe_word_t buf[2][N], bool en0, int row0,
-                           npe_word_t v0, bool en1, int row1, npe_word_t v1) {
-#pragma HLS INLINE
-  if (en0)
-    buf[0][row0] = v0;
-  if (en1)
-    buf[1][row1] = v1;
-}
+#include "npe_mem.h"
 
 // Dense convolution: any kernel size, stride and padding, with an optional
 // epilogue: INTERLEAVE, or ADD (residual; only in builds with NPE_HAS_ADD,
-// so models without residuals do not pay its P multipliers).
+// so models without residuals do not pay its multipliers).
 //
-// Each clock cycle multiplies one input word (P channels) by a P x P block of
-// weights and adds the P results to P running sums: P * P multipliers. One
-// output word needs kh * kw * cin_w cycles; then the sums are requantized.
-// Loop order: output pixel, output word (highest first), kernel row, kernel
-// column, input word.
+// Each clock cycle multiplies PI input words (PI * P channels) by PO x PI
+// blocks of P x P weights and adds the results to PO x P running sums:
+// P * P * PO * PI multipliers. One group of PO output words needs
+// kh * kw * cin_g cycles; then the sums are requantized. Loop order: output
+// pixel, output group (highest first), kernel row, kernel column, input
+// group. Words past the end of the layer's channels (a partial last group)
+// are masked to zero on input and not written on output.
 //
 // Input pixel of output pixel (oy, ox) and kernel position (ky, kx):
 //   iy = oy * stride_h - pad_t + ky,   ix = ox * stride_w - pad_l + kx
 // If (iy, ix) is outside the input, the cycle uses the padding word instead
-// of a memory word: zero, or the layer's constant (read once from W before
-// the loop; only for one-word inputs, i.e. the image).
+// of a memory word: zero, or the layer's constant (stored after the
+// layer's weights; only for one-word inputs, i.e. the image).
 //
-//   plain       output word j of the pixel is written to the output view.
+//   plain       output words j of the group are written to the output view.
 //   interleave  out channel 2i = B channel i, 2i+1 = result channel i. Result
 //               word j and B word j together make output words 2j and 2j+1.
-//               The output may be the same memory as B (in place): walking j
-//               from the highest down, words 2j and 2j+1 are written only
-//               after every B word that still has to be read lies below them.
-//   add         result word j = requant(acc) with B word j added in before
-//               the rounding (npe_requant). B word j is read in the first
-//               input cycle of word j and the output is written in its last,
-//               so the output may be the B view itself (in place).
+//               The output may be the same memory as B (in place): walking
+//               groups from the highest down, the words a group writes
+//               (>= 2 * PO * g) lie above every B word a lower group reads.
+//   add         result = requant(acc) with B word j added in before the
+//               rounding. The output may be the B view itself (in place).
 //
-// Memory ports per cycle: each buffer is read at one row (both banks) and
-// written at most one word per bank. Words 2j and 2j+1 are neighbours, so
-// one is even and one is odd.
+// Memory ports per cycle: each buffer is read once (NB consecutive words)
+// and written once (up to 2 * PO consecutive words), see npe_mem.h.
 inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS INLINE off
-  npe_acc_t acc[NPE_P]; // running sums of the current output word
-#pragma HLS ARRAY_PARTITION variable = acc complete
+  npe_acc_t acc[NPE_PO][NPE_P]; // running sums of the current output group
+#pragma HLS ARRAY_PARTITION variable = acc complete dim = 0
+  npe_word_t b_word[NPE_PO];    // B words of the current output group
+#pragma HLS ARRAY_PARTITION variable = b_word complete
   // No word is read after it has been overwritten (see above).
 #pragma HLS DEPENDENCE variable = S0 inter false
 #pragma HLS DEPENDENCE variable = A inter false
@@ -93,13 +47,14 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   // Padding word: stored after the layer's weights.
   npe_word_t pad_word = 0;
   if (d.pad_const)
-    pad_word = W[d.w_base + d.cout_w * d.w_per_out].range(8 * NPE_P - 1, 0);
+    pad_word = W[d.w_base + d.cout_g * d.w_per_out].range(8 * NPE_P - 1, 0);
 
-  const int total = d.out_h * d.out_w * d.cout_w * d.w_per_out;
-  int ox = 0, oy = 0;      // output pixel
-  int ow = d.cout_w - 1;   // output word within the pixel, descending
+  const int total = d.out_h * d.out_w * d.cout_g * d.w_per_out;
+  const bool from_in = (d.a_buf == NPE_BUF_IN);
+  int ox = 0;              // output pixel column
+  int og = d.cout_g - 1;   // output group within the pixel, descending
   int ky = 0, kx = 0;      // kernel position
-  int iw = 0;              // input word within the pixel
+  int ig = 0;              // input group within the pixel
   // Input position of kernel tap (0, 0) for the current output pixel, and
   // its word address. Both can lie outside the input (padding).
   int iy0 = -d.pad_t, ix0 = -d.pad_l;
@@ -108,111 +63,116 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   int a_pixel = a_origin;  // ... for output pixel (oy, ox)
   int a_line = a_origin;   // address of tap (ky, 0)
   int a_tap = a_origin;    // address of tap (ky, kx)
+  int a_word = a_origin;   // address of input group ig of tap (ky, kx)
   int b_pixel = d.b_first; // operand B word address of the current pixel
   int o_pixel = d.o_first; // output word address of the current pixel
-  int w_addr = d.w_base + ow * d.w_per_out; // next weight word
-  npe_word_t b_word = 0;   // B word of the current output word
+  int w_addr = d.w_base + og * d.w_per_out; // next weight word
 
 conv_loop:
   for (int i = 0; i < total; i++) {
 #pragma HLS PIPELINE II = 1
-    const bool last_iw = (iw == d.cin_w - 1);
+    const bool last_ig = (ig == d.cin_g - 1);
     const bool last_kx = (kx == d.kw - 1);
     const bool last_ky = (ky == d.kh - 1);
-    const bool first_in = (ky == 0 && kx == 0 && iw == 0);
-    const bool last_in = last_ky && last_kx && last_iw;
+    const bool first_in = (ky == 0 && kx == 0 && ig == 0);
+    const bool last_in = last_ky && last_kx && last_ig;
     const int iy = iy0 + ky, ix = ix0 + kx;
     const bool inside = (iy >= 0 && iy < d.a_h && ix >= 0 && ix < d.a_w);
 
     // Read. The A operand and the B operand are in different buffers.
-    int a_addr = inside ? a_tap + iw : 0; // no access outside the input
-    int b_addr = b_pixel + ow;
-    npe_word_t ev[4], od[4];
-    npe_bank_read(S0, npe_read_row(d, NPE_BUF_S0, a_addr, b_addr), ev[0], od[0]);
-    npe_bank_read(A, npe_read_row(d, NPE_BUF_A, a_addr, b_addr), ev[1], od[1]);
-    npe_bank_read(B, npe_read_row(d, NPE_BUF_B, a_addr, b_addr), ev[2], od[2]);
-    npe_bank_read(C, npe_read_row(d, NPE_BUF_C, a_addr, b_addr), ev[3], od[3]);
-    npe_word_t image_word = IN[d.a_buf == NPE_BUF_IN ? a_addr : 0]; // zero-extended
-    int a_sel = d.a_buf - NPE_BUF_S0, b_sel = d.b_buf - NPE_BUF_S0;
-    npe_word_t in_word;
-    if (!inside)
-      in_word = pad_word;
-    else if (d.a_buf == NPE_BUF_IN)
-      in_word = image_word;
-    else
-      in_word = (a_addr & 1) ? od[a_sel] : ev[a_sel];
-    if (d.use_b && first_in)
-      b_word = (b_addr & 1) ? od[b_sel] : ev[b_sel];
+    int a_addr = (inside && !from_in) ? a_word : 0; // no access outside
+    int b_addr = b_pixel + og * NPE_PO;
+    npe_word_t av[NPE_NB], bv[NPE_NB];
+    npe_read_ab(d, S0, A, B, C, a_addr, b_addr, av, bv);
+    npe_word_t image_word = IN[(inside && from_in) ? a_tap : 0]; // zero-extended
+    npe_word_t x[NPE_PI];
+  conv_in_word:
+    for (int k = 0; k < NPE_PI; k++) {
+      bool real = (ig * NPE_PI + k < d.cin_w);
+      if (!inside)
+        x[k] = (k == 0) ? pad_word : (npe_word_t)0;
+      else if (from_in)
+        x[k] = (k == 0) ? image_word : (npe_word_t)0;
+      else
+        x[k] = real ? av[k] : (npe_word_t)0;
+    }
+    if (d.use_b && first_in) {
+    conv_b_word:
+      for (int po = 0; po < NPE_PO; po++)
+        b_word[po] = bv[po];
+    }
 
-    // Multiply-accumulate: P output channels x P input channels.
+    // Multiply-accumulate: PO x P outputs, PI x P inputs.
     npe_wword_t weights = W[w_addr];
-    npe_qword_t quant = Q[d.q_base + ow];
-    npe_word_t result; // valid in the last input cycle
-  conv_out_ch:
-    for (int o = 0; o < NPE_P; o++) {
-      npe_acc_t partial = 0;
-    conv_in_ch:
-      for (int c = 0; c < NPE_P; c++) {
-        ap_uint<8> raw = in_word.range(8 * c + 7, 8 * c);
-        ap_int<9> x = d.a_signed ? (ap_int<9>)(ap_int<8>)raw : (ap_int<9>)raw;
-        ap_int<8> w = weights.range(8 * (NPE_P * o + c) + 7, 8 * (NPE_P * o + c));
-        partial += x * w;
-      }
-      npe_acc_t sum = (first_in ? (npe_acc_t)0 : acc[o]) + partial;
-      acc[o] = sum;
-      npe_acc_t bias = quant.range(32 * o + 31, 32 * o);
-      ap_int<32> M = quant.range(32 * NPE_P + 32 * o + 31, 32 * NPE_P + 32 * o);
-      ap_uint<6> S = quant.range(64 * NPE_P + 8 * o + 5, 64 * NPE_P + 8 * o);
-      ap_int<48> extra = 0; // ADD epilogue: b * Mb joins before the rounding
+    npe_qword_t quant = Q[d.q_base + og];
+    npe_word_t result[NPE_PO]; // valid in the last input cycle
+  conv_out_word:
+    for (int po = 0; po < NPE_PO; po++) {
+    conv_out_ch:
+      for (int o = 0; o < NPE_P; o++) {
+        npe_acc_t partial = 0;
+      conv_in_ch:
+        for (int k = 0; k < NPE_PI; k++) {
+          for (int c = 0; c < NPE_P; c++) {
+            int wb = ((po * NPE_PI + k) * NPE_P + o) * NPE_P + c;
+            ap_int<8> w = weights.range(8 * wb + 7, 8 * wb);
+            partial += npe_lane(x[k], c, d.a_signed) * w;
+          }
+        }
+        npe_acc_t sum = (first_in ? (npe_acc_t)0 : acc[po][o]) + partial;
+        acc[po][o] = sum;
+        const int q = po * NPE_QL;
+        npe_acc_t bias = quant.range(q + 32 * o + 31, q + 32 * o);
+        ap_int<32> M = quant.range(q + 32 * NPE_P + 32 * o + 31, q + 32 * NPE_P + 32 * o);
+        ap_uint<6> S = quant.range(q + 64 * NPE_P + 8 * o + 5, q + 64 * NPE_P + 8 * o);
+        ap_int<48> extra = 0; // ADD epilogue: b * Mb joins before the rounding
 #if NPE_HAS_ADD
-      if (d.add) {
-        ap_uint<8> braw = b_word.range(8 * o + 7, 8 * o);
-        ap_int<9> b = d.b_signed ? (ap_int<9>)(ap_int<8>)braw : (ap_int<9>)braw;
-        ap_int<32> Mb = quant.range(72 * NPE_P + 32 * o + 31, 72 * NPE_P + 32 * o);
-        extra = b * Mb;
-      }
+        if (d.add) {
+          ap_int<32> Mb = quant.range(q + 72 * NPE_P + 32 * o + 31, q + 72 * NPE_P + 32 * o);
+          extra = npe_lane(b_word[po], o, d.b_signed) * Mb;
+        }
 #endif
-      result.range(8 * o + 7, 8 * o) =
-          npe_requant(sum + bias, M, S, d.lo, d.hi, extra);
+        result[po].range(8 * o + 7, 8 * o) =
+            npe_requant(sum + bias, M, S, d.lo, d.hi, extra);
+      }
     }
 
-    // Interleave B and the result, byte by byte, into two words.
-    npe_word_t mix[2];
-  conv_mix:
-    for (int k = 0; k < 2 * NPE_P; k++) {
-      int lane = k / 2; // channel i of B (k even) or of the result (k odd)
-      mix[k / NPE_P].range(8 * (k % NPE_P) + 7, 8 * (k % NPE_P)) =
-          (k & 1) ? result.range(8 * lane + 7, 8 * lane)
-                  : b_word.range(8 * lane + 7, 8 * lane);
+    // Output words: the results, or B and the results interleaved byte by
+    // byte (result word j -> output words 2j, 2j + 1).
+    npe_word_t ov[NPE_NB];
+  conv_out_vec:
+    for (int k = 0; k < NPE_NB; k++) {
+      npe_word_t w = 0;
+      if (d.interleave) {
+        if (k < 2 * NPE_PO) {
+        conv_mix:
+          for (int byte = 0; byte < NPE_P; byte++) {
+            int lane = (NPE_P * (k & 1) + byte) / 2; // channel within word k / 2
+            w.range(8 * byte + 7, 8 * byte) =
+                (byte & 1) ? result[k / 2].range(8 * lane + 7, 8 * lane)
+                           : b_word[k / 2].range(8 * lane + 7, 8 * lane);
+          }
+        }
+      } else if (k < NPE_PO) {
+        w = result[k];
+      }
+      ov[k] = w;
     }
+    int n_real = d.cout_w - og * NPE_PO; // real output words in this group
+    if (n_real > NPE_PO)
+      n_real = NPE_PO;
+    int o_addr = o_pixel + (d.interleave ? 2 * NPE_PO * og : NPE_PO * og);
+    npe_write_o(d, S0, A, B, C, last_in, o_addr,
+                d.interleave ? 2 * n_real : n_real, ov);
 
-    // Write: one word (plain) or two neighbouring words (interleave).
-    int o_addr = o_pixel + (d.interleave ? 2 * ow : ow);
-    npe_word_t v_first = d.interleave ? mix[0] : result;
-    bool first_odd = o_addr & 1;
-    // bank 0 takes whichever of the two words has an even address
-    bool en0 = last_in && (!first_odd || d.interleave);
-    bool en1 = last_in && (first_odd || d.interleave);
-    int row0 = first_odd ? (o_addr + 1) >> 1 : o_addr >> 1;
-    int row1 = o_addr >> 1;
-    npe_word_t v0 = first_odd ? mix[1] : v_first;
-    npe_word_t v1 = first_odd ? v_first : mix[1];
-    npe_bank_write(S0, en0 && d.o_buf == NPE_BUF_S0, row0, v0,
-                   en1 && d.o_buf == NPE_BUF_S0, row1, v1);
-    npe_bank_write(A, en0 && d.o_buf == NPE_BUF_A, row0, v0,
-                   en1 && d.o_buf == NPE_BUF_A, row1, v1);
-    npe_bank_write(B, en0 && d.o_buf == NPE_BUF_B, row0, v0,
-                   en1 && d.o_buf == NPE_BUF_B, row1, v1);
-    npe_bank_write(C, en0 && d.o_buf == NPE_BUF_C, row0, v0,
-                   en1 && d.o_buf == NPE_BUF_C, row1, v1);
-
-    // Advance, innermost first: input word, kernel column, kernel row,
-    // output word (descending), output pixel. Addresses only ever add.
+    // Advance, innermost first: input group, kernel column, kernel row,
+    // output group (descending), output pixel. Addresses only ever add.
     w_addr++;
-    if (!last_iw) {
-      iw++;
+    if (!last_ig) {
+      ig++;
+      a_word += NPE_PI;
     } else {
-      iw = 0;
+      ig = 0;
       if (!last_kx) {
         kx++;
         a_tap += d.a_step;
@@ -224,12 +184,12 @@ conv_loop:
           a_tap = a_line;
         } else {
           ky = 0;
-          if (ow != 0) {
-            ow--;
-            w_addr -= 2 * d.w_per_out; // weights of the next lower word
+          if (og != 0) {
+            og--;
+            w_addr -= 2 * d.w_per_out; // weights of the next lower group
           } else {
-            ow = d.cout_w - 1;
-            w_addr = d.w_base + ow * d.w_per_out;
+            og = d.cout_g - 1;
+            w_addr = d.w_base + og * d.w_per_out;
             b_pixel += d.b_step;
             o_pixel += d.o_step;
             if (ox != d.out_w - 1) {
@@ -238,7 +198,6 @@ conv_loop:
               a_pixel += d.a_col_step;
             } else { // next output row
               ox = 0;
-              oy++;
               ix0 = -d.pad_l;
               iy0 += d.stride_h;
               a_row += d.a_row_step;
@@ -249,6 +208,7 @@ conv_loop:
           a_tap = a_pixel;
         }
       }
+      a_word = a_tap;
     }
   }
 }

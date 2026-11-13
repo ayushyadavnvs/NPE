@@ -28,17 +28,19 @@ int main(int argc, char **argv) {
     printf("usage: tb_top load.bin image_list\n");
     return 2;
   }
-  uint32_t hdr[5];
+  uint32_t hdr[6]; // words of prog, W, WD, Q, QD; results per run
   memcpy(hdr, load.data(), sizeof hdr);
-  const int n_out = hdr[4];
-  const int bytes[4] = {2 * NPE_INSTR_FIELDS, NPE_P * NPE_P, NPE_P,
-                        npe_qword_t::width / 8};
-  const int modes[4] = {NPE_LOAD_PROG, NPE_LOAD_W, NPE_LOAD_WD, NPE_LOAD_Q};
+  const int n_out = hdr[5];
+  const int bytes[5] = {2 * NPE_INSTR_FIELDS, npe_wword_t::width / 8,
+                        npe_dwword_t::width / 8, npe_qword_t::width / 8,
+                        npe_qdword_t::width / 8};
+  const int modes[5] = {NPE_LOAD_PROG, NPE_LOAD_W, NPE_LOAD_WD, NPE_LOAD_Q,
+                        NPE_LOAD_QD};
   size_t pos = sizeof hdr;
   hls::stream<npe_load_beat_t> load_in;
   hls::stream<npe_img_beat_t> img_in;
   hls::stream<npe_out_beat_t> out;
-  for (int m = 0; m < 4; m++) {
+  for (int m = 0; m < 5; m++) {
     int n_beats = hdr[m] * ((bytes[m] + 7) / 8);
     if (pos + 8 * (size_t)n_beats > load.size()) {
       printf("load.bin too short\n");

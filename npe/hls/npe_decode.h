@@ -19,6 +19,8 @@ struct npe_dec_t {
   // loop bounds
   int out_h, out_w;  // output pixels
   int cin_w, cout_w; // input / output words per pixel that this layer uses
+  int cin_g, cout_g; // conv: input / output word groups (of PI / PO words)
+  int ch_g;          // depthwise, pool: channel word groups (of PC words)
   int out_c;         // output channels (fc: how many results go to OUT)
   int kh, kw;        // kernel size
   // input A: word address of pixel (y, x) = a_first + (y * a_w + x) * a_step
@@ -30,7 +32,7 @@ struct npe_dec_t {
   int a_row_step;    // one output row down:   stride_h * a_w * a_step
   int a_col_step;    // one output pixel right: stride_w * a_step
   int a_line_step;   // one kernel row down:   a_w * a_step
-  int w_per_out;     // weight words per output word: kh * kw * cin_w
+  int w_per_out;     // weight words per output group: kh * kw * cin_g
   // operand B (INTERLEAVE, ADD), same pixel grid as the output
   int b_buf, b_first, b_step;
   // output
@@ -65,6 +67,9 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.kw = I.kw;
   d.cout_w = (I.o_c + NPE_P - 1) / NPE_P; // fc: classes rounded up to words
   d.out_c = I.o_c;
+  d.cin_g = (d.cin_w + NPE_PI - 1) / NPE_PI;
+  d.cout_g = (d.cout_w + NPE_PO - 1) / NPE_PO;
+  d.ch_g = (d.cout_w + NPE_PC - 1) / NPE_PC;
 
   // A pixel stride of 0 in the instruction means "the tensor's own channels".
   int a_pix = I.a_pix ? I.a_pix : I.a_c;
@@ -84,7 +89,7 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.a_row_step = I.sh * I.a_w * d.a_step;
   d.a_col_step = I.sw * d.a_step;
   d.a_line_step = I.a_w * d.a_step;
-  d.w_per_out = I.kh * I.kw * d.cin_w;
+  d.w_per_out = I.kh * I.kw * d.cin_g;
   d.a_signed = I.a_signed;
   d.b_buf = I.b_buf;
   d.b_first = (I.b_base + I.b_off) / NPE_P;

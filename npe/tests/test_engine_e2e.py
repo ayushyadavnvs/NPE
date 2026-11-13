@@ -34,7 +34,7 @@ def main():
     imgs = imgs[:n] if n else imgs
     n_out = prog[-1].o_c
     blob = [struct.pack("<3I", len(hw), len(imgs), n_out), isa.encode(hw),
-            mems["W"].tobytes(), mems["WD"].tobytes(), mems["Q"].tobytes()]
+            *(mems[k].tobytes() for k in ("W", "WD", "Q", "QD"))]
     for x in imgs:
         img = np.fromfile(os.path.join(root, x, "input.bin"), np.uint8)
         gold = np.fromfile(os.path.join(root, x, "logits.bin"), "<i4")

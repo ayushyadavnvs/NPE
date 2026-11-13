@@ -1,6 +1,10 @@
 #ifndef NPE_TOP_H_
 #define NPE_TOP_H_
 
+// Wide parameter words (npe_types.h): set before anything includes ap_int.h.
+#ifndef AP_INT_MAX_W
+#define AP_INT_MAX_W 8192
+#endif
 #include <ap_axi_sdata.h>
 
 #include "npe_engine.h"
@@ -17,7 +21,8 @@
 //
 //   mode     what this call does (below); count: words to load, or number of
 //            instructions to run; n_out: results to send in NPE_RUN.
-enum { NPE_RUN = 0, NPE_LOAD_PROG = 1, NPE_LOAD_W = 2, NPE_LOAD_WD = 3, NPE_LOAD_Q = 4 };
+enum { NPE_RUN = 0, NPE_LOAD_PROG = 1, NPE_LOAD_W = 2, NPE_LOAD_WD = 3, NPE_LOAD_Q = 4,
+       NPE_LOAD_QD = 5 };
 
 #define NPE_IN_BEAT_BITS (8 * ((NPE_IN_C + 3) / 4) * 4) // whole bytes, >= 32
 typedef ap_axiu<64, 1, 1, 1> npe_load_beat_t;

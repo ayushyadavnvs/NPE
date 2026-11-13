@@ -3,7 +3,7 @@
 // npe/tests/test_engine.py:
 //   u32 n_cases
 //   W image (NPE_W_WORDS words), WD image (NPE_WD_WORDS words),
-//   Q image (NPE_Q_WORDS words)
+//   Q image (NPE_Q_WORDS words), QD image (NPE_QD_WORDS words)
 //   IN image (NPE_IN_PIXELS x NPE_IN_C bytes)
 //   per case: the instruction (NPE_INSTR_FIELDS x u16), buffers S0, A, B, C
 //             (one byte per channel) and V (4 bytes per channel) before it,
@@ -16,14 +16,15 @@
 #include "npe_engine.h"
 
 static npe_pixel_t IN[NPE_IN_PIXELS];
-static npe_word_t S0[2][NPE_HALF(NPE_BUF_S0_WORDS)];
-static npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)];
-static npe_word_t B[2][NPE_HALF(NPE_BUF_B_WORDS)];
-static npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)];
+static npe_word_t S0[NPE_NB][NPE_ROWS(NPE_BUF_S0_WORDS)];
+static npe_word_t A[NPE_NB][NPE_ROWS(NPE_BUF_A_WORDS)];
+static npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)];
+static npe_word_t C[NPE_NB][NPE_ROWS(NPE_BUF_C_WORDS)];
 static npe_wword_t W[NPE_W_WORDS];
 static npe_vword_t V[NPE_V_WORDS];
-static npe_word_t WD[NPE_WD_WORDS];
+static npe_dwword_t WD[NPE_WD_WORDS];
 static npe_qword_t Q[NPE_Q_WORDS];
+static npe_qdword_t QD[NPE_QD_WORDS];
 
 static std::vector<uint8_t> read_bytes(FILE *f, size_t n) {
   std::vector<uint8_t> v(n);
@@ -34,20 +35,21 @@ static std::vector<uint8_t> read_bytes(FILE *f, size_t n) {
   return v;
 }
 
-// Word w of a buffer holds bytes [P * w, P * w + P) of its byte image.
-template <int N> static void load(npe_word_t buf[2][N], FILE *f) {
-  std::vector<uint8_t> img = read_bytes(f, 2 * N * NPE_P);
-  for (int w = 0; w < 2 * N; w++)
+// Word w of a buffer (bank w % NB, row w / NB) holds bytes [P * w, P * w + P)
+// of its byte image.
+template <int N> static void load(npe_word_t buf[NPE_NB][N], FILE *f) {
+  std::vector<uint8_t> img = read_bytes(f, NPE_NB * N * NPE_P);
+  for (int w = 0; w < NPE_NB * N; w++)
     for (int k = 0; k < NPE_P; k++)
-      buf[w & 1][w >> 1].range(8 * k + 7, 8 * k) = img[NPE_P * w + k];
+      buf[w % NPE_NB][w / NPE_NB].range(8 * k + 7, 8 * k) = img[NPE_P * w + k];
 }
 
-template <int N> static int diff(npe_word_t buf[2][N], FILE *f) {
-  std::vector<uint8_t> img = read_bytes(f, 2 * N * NPE_P);
+template <int N> static int diff(npe_word_t buf[NPE_NB][N], FILE *f) {
+  std::vector<uint8_t> img = read_bytes(f, NPE_NB * N * NPE_P);
   int bad = 0;
-  for (int w = 0; w < 2 * N; w++)
+  for (int w = 0; w < NPE_NB * N; w++)
     for (int k = 0; k < NPE_P; k++)
-      bad += ((uint8_t)buf[w & 1][w >> 1].range(8 * k + 7, 8 * k) !=
+      bad += ((uint8_t)buf[w % NPE_NB][w / NPE_NB].range(8 * k + 7, 8 * k) !=
               img[NPE_P * w + k]);
   return bad;
 }
@@ -79,6 +81,7 @@ int main(int argc, char **argv) {
   load_mem(W, f);
   load_mem(WD, f);
   load_mem(Q, f);
+  load_mem(QD, f);
   load_mem(IN, f);
   int failed = 0;
   for (uint32_t n = 0; n < n_cases; n++) {

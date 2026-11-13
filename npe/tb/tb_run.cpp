@@ -3,7 +3,7 @@
 // between images. The run file is written by npe/tests/test_engine_e2e.py:
 //   u32 n_instr, u32 n_images, u32 n_out
 //   program (n_instr x NPE_INSTR_FIELDS x u16)
-//   W, WD, Q images
+//   W, WD, Q, QD images
 //   per image: IN (NPE_IN_PIXELS x NPE_IN_C bytes), expected OUT (n_out x i32)
 #include <cstdio>
 #include <cstring>
@@ -12,14 +12,15 @@
 #include "npe_engine.h"
 
 static npe_pixel_t IN[NPE_IN_PIXELS];
-static npe_word_t S0[2][NPE_HALF(NPE_BUF_S0_WORDS)];
-static npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)];
-static npe_word_t B[2][NPE_HALF(NPE_BUF_B_WORDS)];
-static npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)];
+static npe_word_t S0[NPE_NB][NPE_ROWS(NPE_BUF_S0_WORDS)];
+static npe_word_t A[NPE_NB][NPE_ROWS(NPE_BUF_A_WORDS)];
+static npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)];
+static npe_word_t C[NPE_NB][NPE_ROWS(NPE_BUF_C_WORDS)];
 static npe_vword_t V[NPE_V_WORDS];
 static npe_wword_t W[NPE_W_WORDS];
-static npe_word_t WD[NPE_WD_WORDS];
+static npe_dwword_t WD[NPE_WD_WORDS];
 static npe_qword_t Q[NPE_Q_WORDS];
+static npe_qdword_t QD[NPE_QD_WORDS];
 
 static std::vector<uint8_t> read_bytes(FILE *f, size_t n) {
   std::vector<uint8_t> v(n);
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
   load_mem(W, f);
   load_mem(WD, f);
   load_mem(Q, f);
+  load_mem(QD, f);
   int failed = 0;
   for (uint32_t n = 0; n < n_images; n++) {
     load_mem(IN, f);

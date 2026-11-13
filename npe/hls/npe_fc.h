@@ -7,7 +7,8 @@
 // bias[k], written as raw int32 to the OUT stream (logits, no requant).
 //
 // Each clock cycle multiplies one V word (P int32) by a P x P weight block
-// (same W layout as a dense 1x1 conv) into P running sums. After the input
+// (the low P x P bytes of a W word; fc does not use the PO / PI width) into
+// P running sums. After the input
 // words of one output word, its real outputs (the last word can be partly
 // padding, e.g. 3 classes) are streamed out one per cycle.
 // The sums are 64-bit; the result is the low 32 bits, exact when it fits in

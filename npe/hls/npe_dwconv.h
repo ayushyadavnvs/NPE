@@ -1,24 +1,25 @@
 #ifndef NPE_DWCONV_H_
 #define NPE_DWCONV_H_
 
-#include "npe_conv.h" // npe_requant, npe_bank_read / write, npe_read_row
+#include "npe_mem.h"
 
 // Depthwise convolution: every channel is convolved with its own kh x kw
 // kernel (groups = channels). Any kernel size, stride and zero padding.
 //
-// Each clock cycle reads one input word (P channels of one input pixel) and
-// multiplies it lane by lane with one kernel tap of those P channels: P
-// multipliers. One output word needs kh * kw cycles. Loop order: output
-// pixel, channel word, kernel row, kernel column. The weight address (WD)
-// therefore just counts up within a pixel.
+// Each clock cycle reads PC consecutive channel words of one input pixel and
+// multiplies them lane by lane with one kernel tap of those channels: P * PC
+// multipliers. One group of PC output words needs kh * kw cycles. Loop
+// order: output pixel, channel group, kernel row, kernel column. The weight
+// address (WD) therefore just counts up within a pixel. Words past the
+// layer's channels (a partial last group) are masked and not written.
 //
 // Input pixel of output pixel (oy, ox) and tap (ky, kx), and padding, are as
-// in npe_conv. The output word is written once, in the last tap cycle; the
+// in npe_conv. The output words are written once, in the last tap cycle; the
 // input and output are in different buffers (checked by the packer).
 inline void npe_dwconv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS INLINE off
-  npe_acc_t acc[NPE_P]; // running sums of the current channel word
-#pragma HLS ARRAY_PARTITION variable = acc complete
+  npe_acc_t acc[NPE_PC][NPE_P]; // running sums of the current channel group
+#pragma HLS ARRAY_PARTITION variable = acc complete dim = 0
   // Reads and writes go to different buffers.
 #pragma HLS DEPENDENCE variable = S0 inter false
 #pragma HLS DEPENDENCE variable = A inter false
@@ -26,19 +27,19 @@ inline void npe_dwconv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS DEPENDENCE variable = C inter false
 
   const int taps = d.kh * d.kw;
-  const int total = d.out_h * d.out_w * d.cout_w * taps;
-  int ox = 0, oy = 0;      // output pixel
-  int cw = 0;              // channel word
+  const int total = d.out_h * d.out_w * d.ch_g * taps;
+  int ox = 0;              // output pixel column
+  int cg = 0;              // channel group
   int ky = 0, kx = 0;      // kernel position
   int iy0 = -d.pad_t, ix0 = -d.pad_l; // input position of tap (0, 0)
   const int a_origin = d.a_first - d.pad_t * d.a_line_step - d.pad_l * d.a_step;
-  int a_row = a_origin;    // address of tap (0, 0), channel word 0, pixel (oy, 0)
+  int a_row = a_origin;    // address of tap (0, 0), group 0, pixel (oy, 0)
   int a_pixel = a_origin;  // ... pixel (oy, ox)
-  int a_line = a_origin;   // address of tap (ky, 0), channel word cw
-  int a_tap = a_origin;    // address of tap (ky, kx), channel word cw
+  int a_line = a_origin;   // address of tap (ky, 0), group cg
+  int a_tap = a_origin;    // address of tap (ky, kx), group cg
   int o_pixel = d.o_first; // output word address of the current pixel
   int w_addr = d.w_base;   // next WD word
-  int q_addr = d.q_base;   // Q word of the current channel word
+  int q_addr = d.q_base;   // QD word of the current channel group
 
 dwconv_loop:
   for (int i = 0; i < total; i++) {
@@ -50,50 +51,40 @@ dwconv_loop:
     const int iy = iy0 + ky, ix = ix0 + kx;
     const bool inside = (iy >= 0 && iy < d.a_h && ix >= 0 && ix < d.a_w);
 
-    // Read: one input word (zero at a padding position).
+    // Read PC words (zero at a padding position or past the channels).
     int a_addr = inside ? a_tap : 0;
-    npe_word_t ev[4], od[4];
-    npe_bank_read(S0, d.a_buf == NPE_BUF_S0 ? a_addr >> 1 : 0, ev[0], od[0]);
-    npe_bank_read(A, d.a_buf == NPE_BUF_A ? a_addr >> 1 : 0, ev[1], od[1]);
-    npe_bank_read(B, d.a_buf == NPE_BUF_B ? a_addr >> 1 : 0, ev[2], od[2]);
-    npe_bank_read(C, d.a_buf == NPE_BUF_C ? a_addr >> 1 : 0, ev[3], od[3]);
-    int a_sel = d.a_buf - NPE_BUF_S0;
-    npe_word_t in_word = 0;
-    if (inside)
-      in_word = (a_addr & 1) ? od[a_sel] : ev[a_sel];
+    npe_word_t av[NPE_NB], bv[NPE_NB];
+    npe_read_ab(d, S0, A, B, C, a_addr, a_addr, av, bv);
 
-    // Multiply-accumulate: lane c of the input times lane c of the tap.
-    npe_word_t weights = WD[w_addr];
-    npe_qword_t quant = Q[q_addr];
-    npe_word_t result; // valid in the last tap cycle
-  dwconv_lane:
-    for (int c = 0; c < NPE_P; c++) {
-      ap_uint<8> raw = in_word.range(8 * c + 7, 8 * c);
-      ap_int<9> x = d.a_signed ? (ap_int<9>)(ap_int<8>)raw : (ap_int<9>)raw;
-      ap_int<8> w = weights.range(8 * c + 7, 8 * c);
-      npe_acc_t sum = (first_tap ? (npe_acc_t)0 : acc[c]) + x * w;
-      acc[c] = sum;
-      npe_acc_t bias = quant.range(32 * c + 31, 32 * c);
-      ap_int<32> M = quant.range(32 * NPE_P + 32 * c + 31, 32 * NPE_P + 32 * c);
-      ap_uint<6> S = quant.range(64 * NPE_P + 8 * c + 5, 64 * NPE_P + 8 * c);
-      result.range(8 * c + 7, 8 * c) = npe_requant(sum + bias, M, S, d.lo, d.hi);
+    npe_dwword_t weights = WD[w_addr];
+    npe_qdword_t quant = QD[q_addr];
+    npe_word_t result[NPE_NB];
+  dwconv_word:
+    for (int k = 0; k < NPE_NB; k++) {
+      result[k] = 0;
+      if (k < NPE_PC) {
+        bool real = inside && (cg * NPE_PC + k < d.cout_w);
+        npe_word_t x = real ? av[k] : (npe_word_t)0;
+      dwconv_lane:
+        for (int c = 0; c < NPE_P; c++) {
+          int l = NPE_P * k + c; // lane within the group
+          ap_int<8> w = weights.range(8 * l + 7, 8 * l);
+          npe_acc_t sum = (first_tap ? (npe_acc_t)0 : acc[k][c]) + npe_lane(x, c, d.a_signed) * w;
+          acc[k][c] = sum;
+          const int q = 72 * NPE_P * k;
+          npe_acc_t bias = quant.range(q + 32 * c + 31, q + 32 * c);
+          ap_int<32> M = quant.range(q + 32 * NPE_P + 32 * c + 31, q + 32 * NPE_P + 32 * c);
+          ap_uint<6> S = quant.range(q + 64 * NPE_P + 8 * c + 5, q + 64 * NPE_P + 8 * c);
+          result[k].range(8 * c + 7, 8 * c) = npe_requant(sum + bias, M, S, d.lo, d.hi);
+        }
+      }
     }
+    int n_real = d.cout_w - cg * NPE_PC;
+    if (n_real > NPE_PC)
+      n_real = NPE_PC;
+    npe_write_o(d, S0, A, B, C, last_tap, o_pixel + cg * NPE_PC, n_real, result);
 
-    // Write one word, in the last tap cycle, to the bank of its address.
-    int o_addr = o_pixel + cw;
-    bool odd = o_addr & 1;
-    int row = o_addr >> 1;
-    bool en0 = last_tap && !odd, en1 = last_tap && odd;
-    npe_bank_write(S0, en0 && d.o_buf == NPE_BUF_S0, row, result,
-                   en1 && d.o_buf == NPE_BUF_S0, row, result);
-    npe_bank_write(A, en0 && d.o_buf == NPE_BUF_A, row, result,
-                   en1 && d.o_buf == NPE_BUF_A, row, result);
-    npe_bank_write(B, en0 && d.o_buf == NPE_BUF_B, row, result,
-                   en1 && d.o_buf == NPE_BUF_B, row, result);
-    npe_bank_write(C, en0 && d.o_buf == NPE_BUF_C, row, result,
-                   en1 && d.o_buf == NPE_BUF_C, row, result);
-
-    // Advance, innermost first: kernel column, kernel row, channel word,
+    // Advance, innermost first: kernel column, kernel row, channel group,
     // output pixel. Addresses only ever add.
     w_addr++;
     if (!last_kx) {
@@ -107,11 +98,11 @@ dwconv_loop:
         a_tap = a_line;
       } else {
         ky = 0;
-        if (cw != d.cout_w - 1) {
-          cw++;
+        if (cg != d.ch_g - 1) {
+          cg++;
           q_addr++;
         } else {
-          cw = 0;
+          cg = 0;
           q_addr = d.q_base;
           w_addr = d.w_base;
           o_pixel += d.o_step;
@@ -121,14 +112,13 @@ dwconv_loop:
             a_pixel += d.a_col_step;
           } else { // next output row
             ox = 0;
-            oy++;
             ix0 = -d.pad_l;
             iy0 += d.stride_h;
             a_row += d.a_row_step;
             a_pixel = a_row;
           }
         }
-        a_line = a_pixel + cw; // tap (0, 0) of the new channel word
+        a_line = a_pixel + cg * NPE_PC; // tap (0, 0) of the new group
         a_tap = a_line;
       }
     }
