@@ -23,6 +23,9 @@ struct npe_dec_t {
   int ch_g;          // depthwise, pool: channel word groups (of PC words)
   int out_c;         // output channels (fc: how many results go to OUT)
   int kh, kw;        // kernel size
+  int kw_c;          // kernel column steps: kw, or ceil(kw / IN_PPW) on the
+                     // image (IN_PPW pixels of a kernel row per word)
+  int a_kstep;       // address step of one kernel column step
   // input A: word address of pixel (y, x) = a_first + (y * a_w + x) * a_step
   int a_buf, a_first, a_step, a_h, a_w;
   int stride_h, stride_w, pad_t, pad_l;
@@ -32,7 +35,7 @@ struct npe_dec_t {
   int a_row_step;    // one output row down:   stride_h * a_w * a_step
   int a_col_step;    // one output pixel right: stride_w * a_step
   int a_line_step;   // one kernel row down:   a_w * a_step
-  int w_per_out;     // weight words per output group: kh * kw * cin_g
+  int w_per_out;     // weight words per output group: kh * kw_c * cin_g
   // operand B (INTERLEAVE, ADD), same pixel grid as the output
   int b_buf, b_first, b_step;
   // output
@@ -89,7 +92,9 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.a_row_step = I.sh * I.a_w * d.a_step;
   d.a_col_step = I.sw * d.a_step;
   d.a_line_step = I.a_w * d.a_step;
-  d.w_per_out = I.kh * I.kw * d.cin_g;
+  d.kw_c = from_in ? (I.kw + NPE_IN_PPW - 1) / NPE_IN_PPW : I.kw;
+  d.a_kstep = from_in ? NPE_IN_PPW : d.a_step;
+  d.w_per_out = I.kh * d.kw_c * d.cin_g;
   d.a_signed = I.a_signed;
   d.b_buf = I.b_buf;
   d.b_first = (I.b_base + I.b_off) / NPE_P;

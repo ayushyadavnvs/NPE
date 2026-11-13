@@ -131,12 +131,16 @@ def cdiv(a, b):
     return -(-a // b)
 
 
-def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None):
+def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4):
     """Returns (hw_prog, mems, cfg, skipped).
     mems: {"W", "WD", "Q", "QD": uint8 [words, bytes per word]},
     cfg: {macro name: value}."""
     rq, rqc = rq or pc, rqc or po
-    assert 1 <= rq <= pc and 1 <= rqc <= po
+    assert 1 <= rq <= pc and 1 <= rqc <= po and ppb & (ppb - 1) == 0
+    in_c = {I.a_c for I in prog if I.a_buf == isa.BUF_IN and supported(I)}
+    assert len(in_c) <= 1, "every layer reading the image must use all its channels"
+    in_c = in_c.pop() if in_c else 1
+    ppw = max(min(P // in_c, ppb), 1)          # image pixels packed per word
     nb = 2
     while nb < max(2 * po, pi, pc):
         nb *= 2
@@ -161,7 +165,7 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None):
                 f"depthwise {I.kh}x{I.kw} cannot requantize {pc} words in time at RQ={rq}"
             hw.append(pack_depthwise(I, p, mem, pc))
         else:
-            hw.append(pack_conv(I, p, mem, add, po, pi))
+            hw.append(pack_conv(I, p, mem, add, po, pi, ppw))
 
     def buf_words(elems):   # NB banks, plus NB words of slack for vector reads
         return cdiv(cdiv(elems, P) + nb, nb) * nb
@@ -175,9 +179,12 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None):
     cfg["NPE_PROG_WORDS"] = max(len(prog), 1)
     cfg["NPE_OUT_MAX"] = max(sum(I.o_c for I in prog if I.o_buf == isa.BUF_OUT), 1)
     cfg["NPE_V_WORDS"] = max((peak.get(isa.BUF_V, 0) + P - 1) // P, 1)
-    in_c = {I.a_c for n, I in enumerate(prog) if I.a_buf == isa.BUF_IN and n not in skipped}
-    assert len(in_c) <= 1, "every layer reading the image must use all its channels"
-    cfg["NPE_IN_C"] = in_c.pop() if in_c else 1
+    cfg["NPE_IN_C"] = in_c
+    cfg["NPE_IN_PPB"], cfg["NPE_LOG2_IN_PPB"], cfg["NPE_IN_PPW"] = ppb, ppb.bit_length() - 1, ppw
+    beat = 32
+    while beat < 8 * in_c * ppb:
+        beat *= 2
+    cfg["NPE_IN_BEAT_BITS"] = beat             # image AXI-Stream width
     cfg["NPE_IN_PIXELS"] = max(peak.get(isa.BUF_IN, 0) // cfg["NPE_IN_C"], 1)
     width = {"W": P * P * po * pi, "WD": P * pc, "Q": ql * po, "QD": 9 * P * pc}
     mems = {k: np.frombuffer(b"".join(mem[k]), np.uint8).reshape(-1, width[k]) for k in mem}
@@ -205,18 +212,30 @@ def check_quant(p):
         assert np.abs(np.asarray(p["Mb"]).astype(np.int64)).max() < 2 ** 31
 
 
-def pack_conv(I, p, mem, add, po, pi):
+def pack_conv(I, p, mem, add, po, pi, ppw=1):
+    """An image layer (reading IN) packs ppw pixels of a kernel row into one
+    input word: lane s * a_c + c holds channel c of kernel column
+    kx * ppw + s, so a kernel row takes kw_c = ceil(kw / ppw) words."""
     check_quant(p)
     cin_w = cdiv(I.a_c, P)
     cout_w = I.o_c // P
     cin_g, cout_g = cdiv(cin_w, pi), cdiv(cout_w, po)
-    w = np.zeros((cout_g * po * P, I.kh, I.kw, cin_g * pi * P), np.int64)  # [cout][ky][kx][cin]
-    w[:I.o_c, :, :, :I.a_c] = np.asarray(p["w"]).reshape(I.o_c, I.a_c, I.kh, I.kw).transpose(0, 2, 3, 1)
+    wt = np.asarray(p["w"]).reshape(I.o_c, I.a_c, I.kh, I.kw).transpose(0, 2, 3, 1)  # [o][ky][kx][c]
+    if I.a_buf == isa.BUF_IN:
+        kw_c = cdiv(I.kw, ppw)
+        w = np.zeros((cout_g * po * P, I.kh, kw_c, cin_g * pi * P), np.int64)
+        for kx in range(I.kw):
+            s = kx % ppw
+            w[:I.o_c, :, kx // ppw, s * I.a_c:(s + 1) * I.a_c] = wt[:, :, kx, :]
+    else:
+        kw_c = I.kw
+        w = np.zeros((cout_g * po * P, I.kh, I.kw, cin_g * pi * P), np.int64)  # [cout][ky][kx][cin]
+        w[:I.o_c, :, :, :I.a_c] = wt
     assert w.min() >= -128 and w.max() <= 127
     w_base, q_base = len(mem["W"]), len(mem["Q"])
     for og in range(cout_g):
         for ky in range(I.kh):
-            for kx in range(I.kw):
+            for kx in range(kw_c):
                 for ig in range(cin_g):
                     # [po][o][k][c] -> byte ((po * PI + k) * P + o) * P + c
                     blk = w[og * po * P:(og + 1) * po * P, ky, kx, ig * pi * P:(ig + 1) * pi * P]

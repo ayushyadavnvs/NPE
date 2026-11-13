@@ -49,7 +49,8 @@ void npe_top(hls::stream<npe_load_beat_t> &load_in,
   static npe_dwword_t WD[NPE_WD_WORDS];
   static npe_qword_t Q[NPE_Q_WORDS];
   static npe_qdword_t QD[NPE_QD_WORDS];
-  static npe_pixel_t IN[NPE_IN_PIXELS];
+  static npe_pixel_t IN[NPE_IN_PPB][NPE_IN_ROWS];
+#pragma HLS ARRAY_PARTITION variable = IN dim = 1 complete
   static npe_word_t S0[NPE_NB][NPE_ROWS(NPE_BUF_S0_WORDS)];
   static npe_word_t A[NPE_NB][NPE_ROWS(NPE_BUF_A_WORDS)];
   static npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)];
@@ -97,9 +98,11 @@ void npe_top(hls::stream<npe_load_beat_t> &load_in,
 
   // NPE_RUN: image in, program, results out.
 read_image:
-  for (int i = 0; i < NPE_IN_PIXELS; i++) {
+  for (int i = 0; i < (NPE_IN_PIXELS + NPE_IN_PPB - 1) / NPE_IN_PPB; i++) {
 #pragma HLS PIPELINE II = 1
-    IN[i] = img_in.read().data.range(8 * NPE_IN_C - 1, 0);
+    npe_img_beat_t beat = img_in.read();
+    for (int b = 0; b < NPE_IN_PPB; b++)
+      IN[b][i] = beat.data.range(8 * NPE_IN_C * (b + 1) - 1, 8 * NPE_IN_C * b);
   }
 run_program:
   for (int pc = 0; pc < count; pc++) {

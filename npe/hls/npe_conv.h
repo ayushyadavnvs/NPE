@@ -23,6 +23,11 @@
 // of a memory word: zero, or the layer's constant (stored after the
 // layer's weights; only for one-word inputs, i.e. the image).
 //
+// The image (IN) has fewer channels than a word (3 of 8), so an image layer
+// packs IN_PPW pixels of a kernel row into the input word: pixel s of the
+// step at lanes s * IN_C ..; a kernel row takes kw_c = ceil(kw / IN_PPW)
+// cycles instead of kw. Each packed pixel has its own padding check.
+//
 //   plain       output words j of the group are written to the output view.
 //   interleave  out channel 2i = B channel i, 2i+1 = result channel i. Result
 //               word j and B word j together make output words 2j and 2j+1.
@@ -94,7 +99,7 @@ conv_loop:
   for (int i = 0; i < total; i++) {
 #pragma HLS PIPELINE II = 1
     const bool last_ig = (ig == d.cin_g - 1);
-    const bool last_kx = (kx == d.kw - 1);
+    const bool last_kx = (kx == d.kw_c - 1);
     const bool last_ky = (ky == d.kh - 1);
     const bool idle = (hold > 0);   // stretch cycle: no new input
     const bool first_in = (ky == 0 && kx == 0 && ig == 0) && !idle;
@@ -109,17 +114,29 @@ conv_loop:
     int b_addr = b_pixel + og * NPE_PO;
     npe_word_t av[NPE_NB], bv[NPE_NB];
     npe_read_ab(d, S0, A, B, C, a_addr, b_addr, av, bv);
-    npe_word_t image_word = IN[(inside && from_in) ? a_tap : 0]; // zero-extended
+    // Image layer: IN_PPW pixels of the kernel row, each checked for padding.
+    npe_pixel_t px[NPE_IN_PPB];
+    npe_in_read(IN, from_in ? a_tap : 0, px);
+    npe_word_t image_word = 0;
+  conv_in_pixel:
+    for (int s = 0; s < NPE_IN_PPW; s++) {
+      const int kxs = kx * NPE_IN_PPW + s; // kernel column of this pixel
+      const int ixs = ix0 + kxs;
+      const bool in_s = (iy >= 0 && iy < d.a_h && ixs >= 0 && ixs < d.a_w);
+      npe_pixel_t v = in_s ? px[s] : (npe_pixel_t)pad_word.range(8 * NPE_IN_C - 1, 0);
+      if (kxs < d.kw)
+        image_word.range(8 * NPE_IN_C * (s + 1) - 1, 8 * NPE_IN_C * s) = v;
+    }
     npe_word_t x[NPE_PI];
   conv_in_word:
     for (int k = 0; k < NPE_PI; k++) {
       bool real = (ig * NPE_PI + k < d.cin_w);
       if (idle)
         x[k] = 0;
-      else if (!inside)
-        x[k] = (k == 0) ? pad_word : (npe_word_t)0;
       else if (from_in)
         x[k] = (k == 0) ? image_word : (npe_word_t)0;
+      else if (!inside)
+        x[k] = (k == 0) ? pad_word : (npe_word_t)0;
       else
         x[k] = real ? av[k] : (npe_word_t)0;
     }
@@ -250,7 +267,7 @@ conv_loop:
       ig = 0;
       if (!last_kx) {
         kx++;
-        a_tap += d.a_step;
+        a_tap += d.a_kstep;
       } else {
         kx = 0;
         if (!last_ky) {

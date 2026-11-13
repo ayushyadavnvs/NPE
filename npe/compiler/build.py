@@ -2,7 +2,7 @@
 hardware) and load.bin (what the host streams into it).
 
   python3 -m npe.compiler.build [--model shufflenet|mobilenetv2] [--out DIR] [--no-uram]
-                                [--po N] [--pi N] [--pc N] [--rq N] [--rqc N] [--board kv260|zcu104|pynqz2]
+                                [--po N] [--pi N] [--pc N] [--rq N] [--rqc N] [--ppb N] [--board kv260|zcu104|pynqz2]
 
 The memory plan (npe/compiler/memplan.py) picks UltraRAM / block RAM /
 LUTRAM for each memory so the build fits the board.
@@ -17,6 +17,7 @@ load.bin layout (all little-endian):
   first and padded with zeros to a whole number of beats.
 """
 import argparse
+import json
 import os
 import struct
 
@@ -33,8 +34,8 @@ def beats(words):
     return np.concatenate([words, np.zeros((n, pad), np.uint8)], axis=1).tobytes()
 
 
-def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260", rq=None, rqc=None):
-    hw, mems, cfg, skipped = pack.pack(prog, params, peak, po, pi, pc, rq, rqc)
+def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260", rq=None, rqc=None, ppb=4):
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak, po, pi, pc, rq, rqc, ppb)
     assert not skipped, f"instructions this engine cannot run: {skipped}"
     impl, totals = memplan.apply(cfg, board, no_uram)
     cfg["NPE_MEM_ESTIMATE"] = '"URAM %d, BRAM36 %d, LUTRAM LUTs %d"' % totals
@@ -48,6 +49,18 @@ def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260
                             len(mems["Q"]), len(mems["QD"]), n_out))
         for m in (code, mems["W"], mems["WD"], mems["Q"], mems["QD"]):
             f.write(beats(m))
+    # What a host driver (npe/board/npe_driver.py) needs, without parsing C.
+    loads, off = [], 24
+    for mode, m in zip((1, 2, 3, 4, 5), (code, mems["W"], mems["WD"], mems["Q"], mems["QD"])):
+        n_beats = len(m) * (-(-m.shape[1] // 8))
+        loads.append(dict(mode=mode, count=len(m), offset=off, beats=n_beats))
+        off += 8 * n_beats
+    info = dict(n_instr=len(hw), n_out=n_out, loads=loads, in_c=cfg["NPE_IN_C"],
+                in_pixels=cfg["NPE_IN_PIXELS"], in_ppb=cfg["NPE_IN_PPB"],
+                in_beat_bits=cfg["NPE_IN_BEAT_BITS"],
+                knobs={k: cfg[f"NPE_{k.upper()}"] for k in ("po", "pi", "pc", "rq", "rqc")})
+    with open(os.path.join(out, "board.json"), "w") as f:
+        json.dump(info, f, indent=1)
     return cfg, n_out
 
 
@@ -73,11 +86,12 @@ def main():
     ap.add_argument("--pc", type=int, default=1, help="depthwise / pool channel words per cycle")
     ap.add_argument("--rq", type=int, help="depthwise words requantized per cycle (default PC)")
     ap.add_argument("--rqc", type=int, help="dense conv words requantized per cycle (default PO)")
+    ap.add_argument("--ppb", type=int, default=4, help="image pixels per input beat (and IN banks)")
     ap.add_argument("--board", default="kv260", choices=sorted(memplan.BOARDS))
     a = ap.parse_args()
     out = a.out or os.path.join(ROOT, "npe", "build", f"{a.model}_hw")
     prog, params, peak = load_model(a.model)
-    cfg, n_out = build(prog, params, peak, out, a.no_uram, a.po, a.pi, a.pc, a.board, a.rq, a.rqc)
+    cfg, n_out = build(prog, params, peak, out, a.no_uram, a.po, a.pi, a.pc, a.board, a.rq, a.rqc, a.ppb)
     kb = lambda words, bits: words * bits / 8 / 1024   # noqa: E731
     P = cfg["NPE_P"]
     po, pi, pc = cfg["NPE_PO"], cfg["NPE_PI"], cfg["NPE_PC"]

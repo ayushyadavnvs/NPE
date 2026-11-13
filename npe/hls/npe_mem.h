@@ -50,6 +50,27 @@ inline int npe_sel_addr(const npe_dec_t &d, int buf, int a_addr, int b_addr) {
   return d.a_buf == buf ? a_addr : (d.use_b && d.b_buf == buf) ? b_addr : 0;
 }
 
+// px[k] = image pixel addr + k, k < PPB. Rows below 0 read row 0 (those
+// pixels are padding positions and are not used).
+inline void npe_in_read(const npe_pixel_t IN[NPE_IN_PPB][NPE_IN_ROWS], int addr,
+                        npe_pixel_t px[NPE_IN_PPB]) {
+#pragma HLS INLINE
+  npe_pixel_t bank[NPE_IN_PPB];
+#pragma HLS ARRAY_PARTITION variable = bank complete
+in_read_bank:
+  for (int b = 0; b < NPE_IN_PPB; b++) {
+#pragma HLS UNROLL
+    int k = (b - addr) & (NPE_IN_PPB - 1);
+    int row = (addr + k) >> NPE_LOG2_IN_PPB;
+    bank[b] = IN[b][row < 0 ? 0 : row];
+  }
+in_read_rotate:
+  for (int k = 0; k < NPE_IN_PPB; k++) {
+#pragma HLS UNROLL
+    px[k] = bank[(addr + k) & (NPE_IN_PPB - 1)];
+  }
+}
+
 // Reads the A operand vector (at a_addr) and the B operand vector (at
 // b_addr) in one cycle. A and B are in different buffers (the packer checks
 // that), so each buffer is read once.

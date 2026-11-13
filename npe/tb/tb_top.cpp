@@ -74,11 +74,13 @@ int main(int argc, char **argv) {
       printf("cannot read %s\n", dir);
       return 2;
     }
-    for (int p = 0; p < NPE_IN_PIXELS; p++) {
+    for (int p = 0; p < NPE_IN_PIXELS; p += NPE_IN_PPB) {
       npe_img_beat_t beat;
       beat.data = 0;
-      for (int c = 0; c < NPE_IN_C; c++)
-        beat.data.range(8 * c + 7, 8 * c) = img[NPE_IN_C * p + c];
+      for (int j = 0; j < NPE_IN_PPB && p + j < NPE_IN_PIXELS; j++)
+        for (int c = 0; c < NPE_IN_C; c++)
+          beat.data.range(8 * (NPE_IN_C * j + c) + 7, 8 * (NPE_IN_C * j + c)) =
+              img[NPE_IN_C * (p + j) + c];
       beat.user = (p == 0);
       beat.last = 0;
       img_in.write(beat);

@@ -4,7 +4,7 @@ as synthesis reported). Each loop also pays its pipeline depth once, and each
 instruction a small fixed cost for decode and the call.
 
   python3 -m npe.compiler.cycles [--model shufflenet|mobilenetv2] [--mhz 200] [--list]
-                                 [--po N] [--pi N] [--pc N] [--rq N] [--rqc N]
+                                 [--po N] [--pi N] [--pc N] [--rq N] [--rqc N] [--ppb N]
 
 This is an estimate: it does not include AXI back-pressure from the host or
 DRAM, and frames are processed one after another (no overlap).
@@ -24,7 +24,7 @@ def cdiv(a, b):
     return -(-a // b)
 
 
-def instr_cycles(I, po=1, pi=1, pc=1, rq=None, rqc=None):
+def instr_cycles(I, po=1, pi=1, pc=1, rq=None, rqc=None, ppw=1):
     """(unit, cycles, MACs) of one packed instruction on a build with knobs
     po, pi, pc (see npe/hls/npe_types.h)."""
     pix = I.o_h * I.o_w
@@ -41,14 +41,17 @@ def instr_cycles(I, po=1, pi=1, pc=1, rq=None, rqc=None):
         return "dw", pix * cdiv(cout_w, pc) * taps + cdiv(pc, rq or pc) + DEPTH["dw"] + CALL, pix * I.o_c * taps
     cin_w = 1 if I.a_buf == isa.BUF_IN else I.a_c // P
     macs = pix * I.o_c * taps * I.a_c
+    if I.a_buf == isa.BUF_IN:      # ppw image pixels per word (npe_conv.h)
+        taps = I.kh * cdiv(I.kw, ppw)
     drain = cdiv(po, rqc or po)   # a group is at least this long (npe_conv.h)
     return "conv", pix * cdiv(cout_w, po) * max(taps * cdiv(cin_w, pi), drain) + drain + DEPTH["conv"] + CALL, macs
 
 
 def frame_cycles(prog, cfg):
-    k = (cfg.get("NPE_PO", 1), cfg.get("NPE_PI", 1), cfg.get("NPE_PC", 1), cfg.get("NPE_RQ"), cfg.get("NPE_RQC"))
+    k = (cfg.get("NPE_PO", 1), cfg.get("NPE_PI", 1), cfg.get("NPE_PC", 1), cfg.get("NPE_RQ"), cfg.get("NPE_RQC"),
+         cfg.get("NPE_IN_PPW", 1))
     per = [instr_cycles(I, *k) for I in prog]
-    io = cfg["NPE_IN_PIXELS"] + cfg["NPE_OUT_MAX"]   # read image, write results
+    io = cdiv(cfg["NPE_IN_PIXELS"], cfg.get("NPE_IN_PPB", 1)) + cfg["NPE_OUT_MAX"]   # read image, write results
     return per, sum(c for _, c, _ in per) + io
 
 
@@ -62,9 +65,10 @@ def main():
     ap.add_argument("--pc", type=int, default=1)
     ap.add_argument("--rq", type=int)
     ap.add_argument("--rqc", type=int)
+    ap.add_argument("--ppb", type=int, default=4)
     a = ap.parse_args()
     prog, params, peak = load_model(a.model)
-    hw, mems, cfg, skipped = pack.pack(prog, params, peak, a.po, a.pi, a.pc, a.rq, a.rqc)
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak, a.po, a.pi, a.pc, a.rq, a.rqc, a.ppb)
     per, total = frame_cycles(hw, cfg)
     by = {}
     for u, c, m in per:
@@ -76,7 +80,7 @@ def main():
           f"{P * a.pc} depthwise MACs/cycle")
     print(f"{a.model}: {len(hw)} instructions, {macs / 1e6:.1f}M MACs, {total / 1e6:.3f}M cycles "
           f"per frame -> {total / a.mhz / 1e3:.2f} ms, {a.mhz * 1e6 / total:.0f} fps at {a.mhz:g} MHz")
-    print(f"  image in: {cfg['NPE_IN_PIXELS']} cycles")
+    print(f"  image in: {cdiv(cfg['NPE_IN_PIXELS'], cfg.get('NPE_IN_PPB', 1))} cycles")
     for u, (c, m) in sorted(by.items(), key=lambda kv: -kv[1][0]):
         eff = f", {m / c:.1f} MACs/cycle" if m else ""
         print(f"  {u:5s} {c / 1e6:7.3f}M cycles ({100 * c / total:4.1f}%){eff}")

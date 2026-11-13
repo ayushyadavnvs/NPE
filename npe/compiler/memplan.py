@@ -44,7 +44,8 @@ def memories(cfg):
     po, pi, pc = cfg["NPE_PO"], cfg["NPE_PI"], cfg["NPE_PC"]
     ql = (104 if cfg["NPE_HAS_ADD"] else 72) * P
     m = {b: (nb, 8 * P, cfg[f"NPE_BUF_{b}_WORDS"] // nb, True) for b in ("S0", "A", "B", "C")}
-    m["IN"] = (1, 8 * cfg["NPE_IN_C"], cfg["NPE_IN_PIXELS"], False)
+    ppb = cfg.get("NPE_IN_PPB", 1)
+    m["IN"] = (ppb, 8 * cfg["NPE_IN_C"], -(-cfg["NPE_IN_PIXELS"] // ppb) + 1, False)
     m["W"] = (1, 8 * P * P * po * pi, cfg["NPE_W_WORDS"], False)
     m["WD"] = (1, 8 * P * pc, cfg["NPE_WD_WORDS"], False)
     m["Q"] = (1, ql * po, cfg["NPE_Q_WORDS"], False)

@@ -39,12 +39,17 @@ typedef ap_uint<32 * NPE_P> npe_vword_t;        // P int32 (buffer V)
 
 typedef ap_uint<8 * NPE_IN_C> npe_pixel_t;      // one input image pixel
 
+// IN, the input image: NPE_IN_PPB banks, pixel p in bank p % PPB, row p / PPB,
+// so PPB consecutive pixels can be loaded (one AXI beat) and read (the
+// image layer packs IN_PPW pixels of a kernel row into one word) per cycle.
+#define NPE_IN_ROWS ((NPE_IN_PIXELS + NPE_IN_PPB - 1) / NPE_IN_PPB + 1)
+
 // Feature buffers S0, A, B, C: NB banks, word w in bank w % NB, row w / NB.
-// IN (the input image) is a plain read-only memory of pixels. V holds int32
+// IN (the input image) is a read-only memory of pixels (above). V holds int32
 // vectors (GAP sums, fc input). OUT is the output stream of int32 results.
 #define NPE_ROWS(words) ((words) / NPE_NB)
 #define NPE_BUF_PARAMS                                                         \
-  const npe_pixel_t IN[NPE_IN_PIXELS],                                         \
+  const npe_pixel_t IN[NPE_IN_PPB][NPE_IN_ROWS],                                         \
       npe_word_t S0[NPE_NB][NPE_ROWS(NPE_BUF_S0_WORDS)],                       \
       npe_word_t A[NPE_NB][NPE_ROWS(NPE_BUF_A_WORDS)],                         \
       npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)],                         \

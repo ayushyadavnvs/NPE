@@ -11,7 +11,10 @@
 
 #include "npe_engine.h"
 
-static npe_pixel_t IN[NPE_IN_PIXELS];
+static npe_pixel_t IN[NPE_IN_PPB][NPE_IN_ROWS];
+
+// Pixel p of the image (IN_C bytes each) -> bank p % PPB, row p / PPB.
+static void load_in(FILE *f);
 static npe_word_t S0[NPE_NB][NPE_ROWS(NPE_BUF_S0_WORDS)];
 static npe_word_t A[NPE_NB][NPE_ROWS(NPE_BUF_A_WORDS)];
 static npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)];
@@ -38,6 +41,13 @@ template <int BITS, int N> static void load_mem(ap_uint<BITS> (&mem)[N], FILE *f
       mem[w].range(8 * k + 7, 8 * k) = img[(size_t)w * BITS / 8 + k];
 }
 
+static void load_in(FILE *f) {
+  std::vector<uint8_t> img = read_bytes(f, (size_t)NPE_IN_PIXELS * NPE_IN_C);
+  for (int p = 0; p < NPE_IN_PIXELS; p++)
+    for (int c = 0; c < NPE_IN_C; c++)
+      IN[p % NPE_IN_PPB][p / NPE_IN_PPB].range(8 * c + 7, 8 * c) = img[NPE_IN_C * p + c];
+}
+
 int main(int argc, char **argv) {
   FILE *f = fopen(argv[1], "rb");
   if (!f) {
@@ -58,7 +68,7 @@ int main(int argc, char **argv) {
   load_mem(QD, f);
   int failed = 0;
   for (uint32_t n = 0; n < n_images; n++) {
-    load_mem(IN, f);
+    load_in(f);
     hls::stream<npe_acc_t> OUT;
     bool all_ran = true;
     for (uint32_t i = 0; i < n_instr; i++)

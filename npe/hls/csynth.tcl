@@ -8,7 +8,10 @@
 #
 # Environment overrides: NPE_CFG (build dir with npe_config.h),
 # NPE_PART (default KV260: xck26-sfvc784-2LV-c), NPE_CLOCK_NS (default 5),
-# NPE_PRJ (project name under npe/build, default hls_npe).
+# NPE_PRJ (project name under npe/build, default hls_npe),
+# NPE_EXPORT=1 (also export the IP for Vivado: npe/build/<NPE_PRJ>/sol/impl/ip),
+# NPE_IMPL=1 (also run Vivado place and route on the IP alone: post-route
+# utilization and timing in sol/impl/report/verilog).
 set root [file normalize [file join [file dirname [info script]] ..]]
 proc env_or {name default} {
   if {[info exists ::env($name)]} { return $::env($name) }
@@ -28,4 +31,9 @@ open_solution -reset sol -flow_target vivado
 set_part $part
 create_clock -period $clock
 csynth_design
+if {[env_or NPE_IMPL 0]} {
+  export_design -format ip_catalog -flow impl
+} elseif {[env_or NPE_EXPORT 0]} {
+  export_design -format ip_catalog
+}
 exit
