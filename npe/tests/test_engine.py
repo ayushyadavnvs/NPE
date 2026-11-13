@@ -12,7 +12,7 @@ Two suites, each packed and compiled on its own:
               channel-offset views, plain and INTERLEAVE (also in place),
               and image-input layers with constant padding
 
-  python3 -m npe.tests.test_engine [seed] [--po N] [--pi N] [--pc N]
+  python3 -m npe.tests.test_engine [seed] [--po N] [--pi N] [--pc N] [--rq N]
 
 The knobs set the engine's parallelism (npe/hls/npe_types.h).
 """
@@ -31,7 +31,7 @@ from npe.ref.isa_ref import Machine
 NPE = os.path.join(ROOT, "npe")
 BUILD = os.path.join(NPE, "build")
 APDIR = os.path.join(BUILD, "hlsap")
-KNOBS = dict(po=1, pi=1, pc=1)   # set by main()
+KNOBS = dict(po=1, pi=1, pc=1, rq=0)   # set by main(); rq 0 means rq = pc
 
 
 def image(m, cfg, b):
@@ -51,7 +51,7 @@ def run_suite(name, prog, params, peak, inp=None, state=None):
     """Steps the reference through prog; every supported instruction becomes a
     case. state(m) may randomize the buffers before each instruction."""
     hw, mems, cfg, skipped = pack.pack(prog, params, peak, **KNOBS)
-    d = os.path.join(BUILD, name + "_po{po}_pi{pi}_pc{pc}".format(**KNOBS))
+    d = os.path.join(BUILD, name + "_po{po}_pi{pi}_pc{pc}_rq{rq}".format(**KNOBS))
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "npe_config.h"), "w") as f:
         f.write(pack.config_header(cfg))
@@ -122,6 +122,9 @@ def random_suite(seed, count=80):
         cin = in_c if image else P * r(1, 5)
         cout = cin if dw else P * r(1, 5)
         kh, kw = r(1, 5), r(1, 5)
+        pc, rq = KNOBS["pc"], KNOBS["rq"] or KNOBS["pc"]
+        while dw and kh * kw * rq < pc:     # requant must keep up (pack.py)
+            kh, kw = r(1, 5), r(1, 5)
         sh, sw = r(1, 2), r(1, 2)
         pt, pb, pl, pr = (r(0, k - 1) for k in (kh, kh, kw, kw))
         oh, ow = r(1, 5), r(1, 5)
@@ -257,9 +260,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("seed", nargs="?", type=int, default=1)
     for k in KNOBS:
-        ap.add_argument(f"--{k}", type=int, default=1)
+        ap.add_argument(f"--{k}", type=int, default=KNOBS[k])
     a = ap.parse_args()
-    KNOBS.update(po=a.po, pi=a.pi, pc=a.pc)
+    KNOBS.update(po=a.po, pi=a.pi, pc=a.pc, rq=a.rq)
     seed = a.seed
     bad = shufflenet() | mobilenetv2() | random_suite(seed)
     print("TEST FAILED" if bad else "TEST PASSED")

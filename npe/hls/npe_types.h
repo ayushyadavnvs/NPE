@@ -18,6 +18,8 @@
 //           -> P * P * PO * PI multipliers
 //   NPE_PC  channel words per cycle in the depthwise and max-pool units
 //           -> P * PC multipliers (depthwise)
+//   NPE_RQ  depthwise output words requantized per cycle (<= PC; the
+//           requant multipliers are shared over a group's taps)
 //   NPE_NB  banks per feature buffer (power of two, >= 2 PO, PI, PC): any
 //           NB consecutive words sit in different banks, so a unit can read
 //           or write that many in one cycle.

@@ -4,7 +4,7 @@ as synthesis reported). Each loop also pays its pipeline depth once, and each
 instruction a small fixed cost for decode and the call.
 
   python3 -m npe.compiler.cycles [--model shufflenet|mobilenetv2] [--mhz 200] [--list]
-                                 [--po N] [--pi N] [--pc N]
+                                 [--po N] [--pi N] [--pc N] [--rq N]
 
 This is an estimate: it does not include AXI back-pressure from the host or
 DRAM, and frames are processed one after another (no overlap).
@@ -24,7 +24,7 @@ def cdiv(a, b):
     return -(-a // b)
 
 
-def instr_cycles(I, po=1, pi=1, pc=1):
+def instr_cycles(I, po=1, pi=1, pc=1, rq=None):
     """(unit, cycles, MACs) of one packed instruction on a build with knobs
     po, pi, pc (see npe/hls/npe_types.h)."""
     pix = I.o_h * I.o_w
@@ -38,14 +38,14 @@ def instr_cycles(I, po=1, pi=1, pc=1):
     if I.op == isa.OP_GAP:
         return "gap", I.a_h * I.a_w * cout_w + DEPTH["gap"] + CALL, 0
     if pack.is_depthwise(I):
-        return "dw", pix * cdiv(cout_w, pc) * taps + DEPTH["dw"] + CALL, pix * I.o_c * taps
+        return "dw", pix * cdiv(cout_w, pc) * taps + cdiv(pc, rq or pc) + DEPTH["dw"] + CALL, pix * I.o_c * taps
     cin_w = 1 if I.a_buf == isa.BUF_IN else I.a_c // P
     macs = pix * I.o_c * taps * I.a_c
     return "conv", pix * cdiv(cout_w, po) * taps * cdiv(cin_w, pi) + DEPTH["conv"] + CALL, macs
 
 
 def frame_cycles(prog, cfg):
-    k = (cfg.get("NPE_PO", 1), cfg.get("NPE_PI", 1), cfg.get("NPE_PC", 1))
+    k = (cfg.get("NPE_PO", 1), cfg.get("NPE_PI", 1), cfg.get("NPE_PC", 1), cfg.get("NPE_RQ"))
     per = [instr_cycles(I, *k) for I in prog]
     io = cfg["NPE_IN_PIXELS"] + cfg["NPE_OUT_MAX"]   # read image, write results
     return per, sum(c for _, c, _ in per) + io
@@ -59,9 +59,10 @@ def main():
     ap.add_argument("--po", type=int, default=1)
     ap.add_argument("--pi", type=int, default=1)
     ap.add_argument("--pc", type=int, default=1)
+    ap.add_argument("--rq", type=int)
     a = ap.parse_args()
     prog, params, peak = load_model(a.model)
-    hw, mems, cfg, skipped = pack.pack(prog, params, peak, a.po, a.pi, a.pc)
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak, a.po, a.pi, a.pc, a.rq)
     per, total = frame_cycles(hw, cfg)
     by = {}
     for u, c, m in per:

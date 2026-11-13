@@ -2,7 +2,7 @@
 hardware) and load.bin (what the host streams into it).
 
   python3 -m npe.compiler.build [--model shufflenet|mobilenetv2] [--out DIR] [--no-uram]
-                                [--po N] [--pi N] [--pc N] [--board kv260|zcu104|pynqz2]
+                                [--po N] [--pi N] [--pc N] [--rq N] [--board kv260|zcu104|pynqz2]
 
 The memory plan (npe/compiler/memplan.py) picks UltraRAM / block RAM /
 LUTRAM for each memory so the build fits the board.
@@ -33,8 +33,8 @@ def beats(words):
     return np.concatenate([words, np.zeros((n, pad), np.uint8)], axis=1).tobytes()
 
 
-def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260"):
-    hw, mems, cfg, skipped = pack.pack(prog, params, peak, po, pi, pc)
+def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260", rq=None):
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak, po, pi, pc, rq)
     assert not skipped, f"instructions this engine cannot run: {skipped}"
     impl, totals = memplan.apply(cfg, board, no_uram)
     cfg["NPE_MEM_ESTIMATE"] = '"URAM %d, BRAM36 %d, LUTRAM LUTs %d"' % totals
@@ -71,17 +71,18 @@ def main():
     ap.add_argument("--po", type=int, default=1, help="dense conv output words per cycle")
     ap.add_argument("--pi", type=int, default=1, help="dense conv input words per cycle")
     ap.add_argument("--pc", type=int, default=1, help="depthwise / pool channel words per cycle")
+    ap.add_argument("--rq", type=int, help="depthwise words requantized per cycle (default PC)")
     ap.add_argument("--board", default="kv260", choices=sorted(memplan.BOARDS))
     a = ap.parse_args()
     out = a.out or os.path.join(ROOT, "npe", "build", f"{a.model}_hw")
     prog, params, peak = load_model(a.model)
-    cfg, n_out = build(prog, params, peak, out, a.no_uram, a.po, a.pi, a.pc, a.board)
+    cfg, n_out = build(prog, params, peak, out, a.no_uram, a.po, a.pi, a.pc, a.board, a.rq)
     kb = lambda words, bits: words * bits / 8 / 1024   # noqa: E731
     P = cfg["NPE_P"]
     po, pi, pc = cfg["NPE_PO"], cfg["NPE_PI"], cfg["NPE_PC"]
     q_bits = (104 if cfg["NPE_HAS_ADD"] else 72) * P * po
     print(f"wrote {out}/npe_config.h and load.bin: {len(prog)} instructions, {n_out} outputs")
-    print(f"  PO {po}, PI {pi}, PC {pc}, NB {cfg['NPE_NB']}; memories for {a.board}: "
+    print(f"  PO {po}, PI {pi}, PC {pc}, RQ {cfg['NPE_RQ']}, NB {cfg['NPE_NB']}; memories for {a.board}: "
           + ", ".join(f"{k} {v}" for k, v in cfg.items() if k.startswith("NPE_IMPL_")).replace("NPE_IMPL_", "")
           + f"; estimate {cfg['NPE_MEM_ESTIMATE']}")
     print(f"  W {kb(cfg['NPE_W_WORDS'], 8 * P * P * po * pi):.0f} KB, WD {kb(cfg['NPE_WD_WORDS'], 8 * P * pc):.0f} KB, "

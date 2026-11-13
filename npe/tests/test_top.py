@@ -1,7 +1,7 @@
 """A whole model through the engine's top level (npe_top), driven only through
 its AXI streams as a host would.
 
-  python3 -m npe.tests.test_top [N] [--model shufflenet|mobilenetv2] [--po N] [--pi N] [--pc N]
+  python3 -m npe.tests.test_top [N] [--model shufflenet|mobilenetv2] [--po N] [--pi N] [--pc N] [--rq N]
 
 shufflenet   the first N golden images (all if 0) vs the golden logits
 mobilenetv2  the MobileNetV2-shaped network on N random images (default 4)
@@ -55,14 +55,15 @@ def main():
     ap.add_argument("--po", type=int, default=1)
     ap.add_argument("--pi", type=int, default=1)
     ap.add_argument("--pc", type=int, default=1)
+    ap.add_argument("--rq", type=int, default=0)
     a = ap.parse_args()
-    d = os.path.join(BUILD, f"top_{a.model}_po{a.po}_pi{a.pi}_pc{a.pc}")
+    d = os.path.join(BUILD, f"top_{a.model}_po{a.po}_pi{a.pi}_pc{a.pc}_rq{a.rq}")
     os.makedirs(d, exist_ok=True)
     if a.model == "shufflenet":
         prog, params, peak, dirs = shufflenet_case(a.n)
     else:
         prog, params, peak, dirs = mobilenetv2_case(a.n, d)
-    cfg, _ = build(prog, params, peak, d, po=a.po, pi=a.pi, pc=a.pc)
+    cfg, _ = build(prog, params, peak, d, po=a.po, pi=a.pi, pc=a.pc, rq=a.rq or None)
     print(f"{a.model}: {len(prog)} instructions, "
           f"{sum(I.epi == isa.EPI_ADD for I in prog)} with ADD, NPE_HAS_ADD={cfg['NPE_HAS_ADD']}")
     lst = os.path.join(d, "images.txt")

@@ -43,6 +43,13 @@ vwrite_bank:
   }
 }
 
+// Address a buffer is read at: a_addr if it holds operand A, b_addr if it
+// holds operand B, else 0 (an unused buffer must not be read out of range).
+inline int npe_sel_addr(const npe_dec_t &d, int buf, int a_addr, int b_addr) {
+#pragma HLS INLINE
+  return d.a_buf == buf ? a_addr : (d.use_b && d.b_buf == buf) ? b_addr : 0;
+}
+
 // Reads the A operand vector (at a_addr) and the B operand vector (at
 // b_addr) in one cycle. A and B are in different buffers (the packer checks
 // that), so each buffer is read once.
@@ -55,10 +62,10 @@ inline void npe_read_ab(const npe_dec_t &d, const npe_word_t S0[NPE_NB][NPE_ROWS
 #pragma HLS INLINE
   npe_word_t v[4][NPE_NB];
 #pragma HLS ARRAY_PARTITION variable = v complete dim = 0
-  npe_vread(S0, d.a_buf == NPE_BUF_S0 ? a_addr : b_addr, v[0]);
-  npe_vread(A, d.a_buf == NPE_BUF_A ? a_addr : b_addr, v[1]);
-  npe_vread(B, d.a_buf == NPE_BUF_B ? a_addr : b_addr, v[2]);
-  npe_vread(C, d.a_buf == NPE_BUF_C ? a_addr : b_addr, v[3]);
+  npe_vread(S0, npe_sel_addr(d, NPE_BUF_S0, a_addr, b_addr), v[0]);
+  npe_vread(A, npe_sel_addr(d, NPE_BUF_A, a_addr, b_addr), v[1]);
+  npe_vread(B, npe_sel_addr(d, NPE_BUF_B, a_addr, b_addr), v[2]);
+  npe_vread(C, npe_sel_addr(d, NPE_BUF_C, a_addr, b_addr), v[3]);
   int a_sel = (d.a_buf - NPE_BUF_S0) & 3, b_sel = (d.b_buf - NPE_BUF_S0) & 3;
 read_ab_sel:
   for (int k = 0; k < NPE_NB; k++) {
