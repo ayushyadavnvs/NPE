@@ -17,15 +17,20 @@ typedef ap_uint<8 * NPE_P * NPE_P> npe_wword_t; // P x P int8 weights
 typedef ap_uint<72 * NPE_P> npe_qword_t;        // P x (bias, M, S)
 typedef ap_int<32> npe_acc_t;                   // MAC accumulator
 
+typedef ap_uint<8 * NPE_IN_C> npe_pixel_t;      // one input image pixel
+
 // Every feature buffer is two banks: bank 0 holds the even words, bank 1 the
 // odd words. A layer can then read two neighbouring words, or write two, in
-// one clock cycle with one access per bank.
+// one clock cycle with one access per bank. IN (the input image) is a plain
+// read-only memory of pixels.
 #define NPE_HALF(words) ((words) / 2)
 #define NPE_BUF_PARAMS                                                         \
-  npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)],                                  \
+  const npe_pixel_t IN[NPE_IN_PIXELS],                                         \
+      npe_word_t S0[2][NPE_HALF(NPE_BUF_S0_WORDS)],                            \
+      npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)],                              \
       npe_word_t B[2][NPE_HALF(NPE_BUF_B_WORDS)],                              \
       npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)]
-#define NPE_BUF_ARGS A, B, C
+#define NPE_BUF_ARGS IN, S0, A, B, C
 #define NPE_MEM_PARAMS                                                         \
   const npe_wword_t W[NPE_W_WORDS], const npe_qword_t Q[NPE_Q_WORDS]
 #define NPE_MEM_ARGS W, Q

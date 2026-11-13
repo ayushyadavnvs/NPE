@@ -3,8 +3,10 @@
 Two suites, each packed and compiled on its own:
   shufflenet  every instruction the engine supports, on one golden image,
               starting from the buffer state the reference had at that point
-  random      random 1x1 convolutions: shapes, strides, signed / unsigned,
-              channel-offset views, plain and INTERLEAVE (also in place)
+  random      random dense convolutions: kernel sizes 1-5 (also non-square),
+              strides, asymmetric zero padding, signed / unsigned inputs,
+              channel-offset views, plain and INTERLEAVE (also in place),
+              and image-input layers with constant padding
 
   python3 -m npe.tests.test_engine [seed]
 """
@@ -57,8 +59,13 @@ def run_suite(name, prog, params, peak, inp=None, state=None):
             after = b"".join(image(m, cfg, b) for b in pack.HW_BUFS)
             cases.append(isa.encode([hw[n]]) + before + after)
     path = os.path.join(d, "cases.bin")
+    img = np.zeros(cfg["NPE_IN_PIXELS"] * cfg["NPE_IN_C"], np.uint8)
+    if isa.BUF_IN in m.buf:
+        n = min(len(img), len(m.buf[isa.BUF_IN]))
+        img[:n] = m.buf[isa.BUF_IN][:n] & 0xFF
     with open(path, "wb") as f:
-        f.write(struct.pack("<I", len(cases)) + W.tobytes() + Q.tobytes() + b"".join(cases))
+        f.write(struct.pack("<I", len(cases)) + W.tobytes() + Q.tobytes() + img.tobytes()
+                + b"".join(cases))
     if not os.path.exists(os.path.join(APDIR, "include", "ap_int.h")):
         subprocess.check_call(["git", "clone", "-q", "--depth", "1",
                                "https://github.com/Xilinx/HLS_arbitrary_Precision_Types", APDIR])
@@ -84,61 +91,78 @@ def shufflenet():
     return run_suite("shufflenet", prog, params, peak, inp=x)
 
 
-def random_suite(seed, count=60):
+def random_suite(seed, count=80):
     rng = np.random.default_rng(seed)
     P = pack.P
     prog, params, peak = [], [], {}
     bufs = pack.HW_BUFS
-    for _ in range(count):
-        cin, cout = (P * int(rng.integers(1, 5)) for _ in range(2))
-        sh, sw = int(rng.integers(1, 3)), int(rng.integers(1, 3))
-        oh, ow = int(rng.integers(1, 6)), int(rng.integers(1, 6))
-        ah, aw = (oh - 1) * sh + 1, (ow - 1) * sw + 1   # 1x1, no padding
-        a_off = P * int(rng.integers(0, 3))
-        a_pix = a_off + cin + P * int(rng.integers(0, 3))
-        relu = bool(rng.integers(0, 2))
-        inter = bool(rng.integers(0, 2))
-        a_buf, o_buf, b_buf = (int(b) for b in rng.permutation(bufs))
-        I = Instr(op=isa.OP_CONV, act=isa.ACT_RELU if relu else isa.ACT_NONE, sh=sh, sw=sw,
-                  a_buf=a_buf, a_base=P * int(rng.integers(0, 3)), a_h=ah, a_w=aw, a_c=cin,
-                  a_pix=a_pix, a_off=a_off, a_signed=int(rng.integers(0, 2)),
-                  o_buf=o_buf, o_base=P * int(rng.integers(0, 3)), o_h=oh, o_w=ow, o_c=cout,
-                  o_signed=0 if relu else int(rng.integers(0, 2)), w_base=len(params))
-        if inter:
+    in_c = 3
+    r = lambda lo, hi: int(rng.integers(lo, hi + 1))   # noqa: E731
+    for n in range(count):
+        image = n % 4 == 0                  # every 4th case reads the RGB image
+        cin = in_c if image else P * r(1, 3)
+        cout = P * r(1, 3)
+        kh, kw = r(1, 5), r(1, 5)
+        sh, sw = r(1, 2), r(1, 2)
+        pt, pb, pl, pr = (r(0, k - 1) for k in (kh, kh, kw, kw))
+        oh, ow = r(1, 5), r(1, 5)
+        ah = max((oh - 1) * sh + kh - pt - pb, 1)
+        aw = max((ow - 1) * sw + kw - pl - pr, 1)
+        oh = (ah + pt + pb - kh) // sh + 1      # recompute: a_h >= 1 may change it
+        ow = (aw + pl + pr - kw) // sw + 1
+        if image:
+            ah, aw = 12, 12                     # one fixed image for all cases
+            oh = (ah + pt + pb - kh) // sh + 1
+            ow = (aw + pl + pr - kw) // sw + 1
+            a_buf, a_base, a_off, a_pix, a_signed = isa.BUF_IN, 0, 0, 0, 0
+            o_buf, b_buf = (int(b) for b in rng.permutation(bufs)[:2])
+        else:
+            a_buf, o_buf, b_buf = (int(b) for b in rng.permutation(bufs)[:3])
+            a_base, a_off = P * r(0, 2), P * r(0, 2)
+            a_pix = a_off + cin + P * r(0, 2)
+            a_signed = r(0, 1)
+        relu = bool(r(0, 1))
+        I = Instr(op=isa.OP_CONV, act=isa.ACT_RELU if relu else isa.ACT_NONE,
+                  kh=kh, kw=kw, sh=sh, sw=sw, pad_t=pt, pad_l=pl, pad_b=pb, pad_r=pr,
+                  pad_mode=isa.PAD_CONST if image and r(0, 1) else isa.PAD_ZERO,
+                  a_buf=a_buf, a_base=a_base, a_h=ah, a_w=aw, a_c=cin, a_pix=a_pix,
+                  a_off=a_off, a_signed=a_signed, o_buf=o_buf, o_base=P * r(0, 2),
+                  o_h=oh, o_w=ow, o_c=cout, o_signed=0 if relu else r(0, 1),
+                  w_base=len(params))
+        if r(0, 1):
             I.epi = isa.EPI_INTERLEAVE
-            if rng.integers(0, 2):      # in place: B is the first half of the output pixel
+            if r(0, 1):      # in place: B is the first half of the output pixel
                 I.b_buf, I.b_base, I.b_pix, I.b_off = o_buf, I.o_base, 2 * cout, 0
             else:
-                I.b_buf, I.b_base = b_buf, P * int(rng.integers(0, 3))
-                I.b_pix = cout + P * int(rng.integers(0, 2))
-                I.o_pix = 2 * cout + P * int(rng.integers(0, 2))
+                I.b_buf, I.b_base = b_buf, P * r(0, 2)
+                I.b_pix = cout + P * r(0, 1)
+                I.o_pix = 2 * cout + P * r(0, 1)
         else:
-            I.o_off = P * int(rng.integers(0, 2))
-            I.o_pix = I.o_off + cout + P * int(rng.integers(0, 2))
-        params.append(dict(w=rng.integers(-128, 128, (cout, cin, 1, 1)),
+            I.o_off = P * r(0, 1)
+            I.o_pix = I.o_off + cout + P * r(0, 1)
+        params.append(dict(w=rng.integers(-128, 128, (cout, cin, kh, kw)),
                            bias=rng.integers(-2 ** 15, 2 ** 15, cout),
-                           M=rng.integers(1, 2 ** 31, cout), S=rng.integers(32, 45, cout)))
+                           M=rng.integers(1, 2 ** 31, cout), S=rng.integers(34, 46, cout),
+                           pad=rng.integers(0, 256, cin)))
         prog.append(I)
-        for buf, n in ((I.a_buf, I.a_base + ah * aw * a_pix),
-                       (I.o_buf, I.o_base + oh * ow * (I.o_pix or I.out_channels())),
-                       (I.b_buf, I.b_base + oh * ow * (I.b_pix or cout))):
-            peak[buf] = max(peak.get(buf, 0), n)
+        uses = [(I.o_buf, I.o_base + oh * ow * (I.o_pix or I.out_channels())),
+                (I.b_buf, I.b_base + oh * ow * (I.b_pix or cout))]
+        if not image:
+            uses.append((a_buf, a_base + ah * aw * a_pix))
+        for buf, size in uses:
+            peak[buf] = max(peak.get(buf, 0), size)
+    peak[isa.BUF_IN] = 12 * 12 * in_c
+    image = rng.integers(0, 256, (12, 12, in_c))
+    it = iter(prog)
 
-    def state(m):   # fresh random bytes everywhere before each instruction
+    def state(m):   # fresh random bytes before each instruction, signed if A is
+        I = next(it)
         for b in bufs:
             m.buf[b][:] = rng.integers(0, 256, len(m.buf[b]))
-
-    def as_signed(m, I):  # the reference stores signed values as negative numbers
         if I.a_signed:
             v = m.buf[I.a_buf]
             v[v > 127] -= 256
-    # wrap state so each instruction's A buffer has the right signedness
-    it = iter(prog)
-
-    def state2(m):
-        state(m)
-        as_signed(m, next(it))
-    return run_suite("random", prog, params, peak, state=state2)
+    return run_suite("random", prog, params, peak, inp=image, state=state)
 
 
 def main():

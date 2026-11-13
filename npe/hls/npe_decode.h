@@ -7,15 +7,22 @@
 // the hardware works in (words of P channels instead of channels).
 struct npe_dec_t {
   // what to run
-  bool run_conv1x1;  // the only unit so far
+  bool run_conv;     // dense convolution, the only unit so far
   bool interleave;   // epilogue INTERLEAVE
   // loop bounds
   int out_h, out_w;  // output pixels
   int cin_w, cout_w; // input / output words per pixel that this layer uses
+  int kh, kw;        // kernel size
   // input A: word address of pixel (y, x) = a_first + (y * a_w + x) * a_step
-  int a_buf, a_first, a_step, a_w;
-  int stride_h, stride_w;
+  int a_buf, a_first, a_step, a_h, a_w;
+  int stride_h, stride_w, pad_t, pad_l;
+  bool pad_const;    // padding value comes from the W memory (else 0)
   bool a_signed;     // input bytes are int8 (else uint8)
+  // address steps, multiplied out once here so the unit only adds
+  int a_row_step;    // one output row down:   stride_h * a_w * a_step
+  int a_col_step;    // one output pixel right: stride_w * a_step
+  int a_line_step;   // one kernel row down:   a_w * a_step
+  int w_per_out;     // weight words per output word: kh * kw * cin_w
   // operand B (interleave only), same pixel grid as the output
   int b_buf, b_first, b_step;
   // output
@@ -31,12 +38,16 @@ struct npe_dec_t {
 inline npe_dec_t npe_decode(const npe_instr_t &I) {
 #pragma HLS INLINE
   npe_dec_t d;
-  d.run_conv1x1 = (I.op == NPE_OP_CONV && I.kh == 1 && I.kw == 1 &&
-                   I.groups == 1 && I.a_bits == 8 && !I.raw_out);
+  d.run_conv = (I.op == NPE_OP_CONV && I.groups == 1 && I.a_bits == 8 &&
+                !I.raw_out);
   d.interleave = (I.epi == NPE_EPI_INTERLEAVE);
   d.out_h = I.o_h;
   d.out_w = I.o_w;
-  d.cin_w = I.a_c / NPE_P;
+  // The image buffer holds one pixel per word, whatever its channel count.
+  const bool from_in = (I.a_buf == NPE_BUF_IN);
+  d.cin_w = from_in ? 1 : I.a_c / NPE_P;
+  d.kh = I.kh;
+  d.kw = I.kw;
   d.cout_w = I.o_c / NPE_P;
 
   // A pixel stride of 0 in the instruction means "the tensor's own channels".
@@ -45,11 +56,19 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   int o_pix = I.o_pix ? I.o_pix : out_c;
   int b_pix = I.b_pix ? I.b_pix : I.o_c;
   d.a_buf = I.a_buf;
-  d.a_first = (I.a_base + I.a_off) / NPE_P;
-  d.a_step = a_pix / NPE_P;
+  d.a_first = from_in ? 0 : (I.a_base + I.a_off) / NPE_P;
+  d.a_step = from_in ? 1 : a_pix / NPE_P;
+  d.a_h = I.a_h;
   d.a_w = I.a_w;
   d.stride_h = I.sh;
   d.stride_w = I.sw;
+  d.pad_t = I.pad_t;
+  d.pad_l = I.pad_l;
+  d.pad_const = (I.pad_mode == NPE_PAD_CONST);
+  d.a_row_step = I.sh * I.a_w * d.a_step;
+  d.a_col_step = I.sw * d.a_step;
+  d.a_line_step = I.a_w * d.a_step;
+  d.w_per_out = I.kh * I.kw * d.cin_w;
   d.a_signed = I.a_signed;
   d.b_buf = I.b_buf;
   d.b_first = (I.b_base + I.b_off) / NPE_P;

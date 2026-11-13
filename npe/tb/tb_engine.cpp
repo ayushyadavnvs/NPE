@@ -3,14 +3,17 @@
 // npe/tests/test_engine.py:
 //   u32 n_cases
 //   W image (NPE_W_WORDS words), Q image (NPE_Q_WORDS words)
-//   per case: the instruction (NPE_INSTR_FIELDS x u16), buffers A, B, C before
-//             it, buffers A, B, C after it (one byte per channel)
+//   IN image (NPE_IN_PIXELS x NPE_IN_C bytes)
+//   per case: the instruction (NPE_INSTR_FIELDS x u16), buffers S0, A, B, C
+//             before it, buffers S0, A, B, C after it (one byte per channel)
 #include <cstdio>
 #include <cstring>
 #include <vector>
 
 #include "npe_engine.h"
 
+static npe_pixel_t IN[NPE_IN_PIXELS];
+static npe_word_t S0[2][NPE_HALF(NPE_BUF_S0_WORDS)];
 static npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)];
 static npe_word_t B[2][NPE_HALF(NPE_BUF_B_WORDS)];
 static npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)];
@@ -61,16 +64,18 @@ int main(int argc, char **argv) {
   fread(&n_cases, 4, 1, f);
   load_mem(W, f);
   load_mem(Q, f);
+  load_mem(IN, f);
   int failed = 0;
   for (uint32_t n = 0; n < n_cases; n++) {
     std::vector<uint8_t> raw = read_bytes(f, 2 * NPE_INSTR_FIELDS);
     npe_instr_t instr;
     memcpy(&instr, raw.data(), sizeof instr);
+    load(S0, f);
     load(A, f);
     load(B, f);
     load(C, f);
     bool ran = npe_step(instr, NPE_BUF_ARGS, NPE_MEM_ARGS);
-    int bad = diff(A, f) + diff(B, f) + diff(C, f);
+    int bad = diff(S0, f) + diff(A, f) + diff(B, f) + diff(C, f);
     if (!ran || bad) {
       failed++;
       printf("case %u: %s, %d wrong bytes\n", n, ran ? "ran" : "NOT RUN", bad);
