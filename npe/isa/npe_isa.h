@@ -8,7 +8,7 @@ enum { NPE_OP_CONV, NPE_OP_POOL_MAX, NPE_OP_POOL_AVG, NPE_OP_GAP, NPE_OP_ADD };
 enum { NPE_EPI_NONE, NPE_EPI_INTERLEAVE, NPE_EPI_ADD };
 enum { NPE_ACT_NONE, NPE_ACT_RELU, NPE_ACT_RELU6 };
 enum { NPE_PAD_ZERO, NPE_PAD_CONST };
-enum { NPE_BUF_IN, NPE_BUF_OUT, NPE_BUF_S0, NPE_BUF_A, NPE_BUF_B, NPE_BUF_C };
+enum { NPE_BUF_IN, NPE_BUF_OUT, NPE_BUF_S0, NPE_BUF_A, NPE_BUF_B, NPE_BUF_C, NPE_BUF_V };
 
 // One layer. 39 x 16-bit fields; field order = binary program order.
 struct npe_instr_t {

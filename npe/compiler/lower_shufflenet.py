@@ -89,15 +89,16 @@ def lower(layers, pad_value, img=224):
         names[-1] = f"{prefix}.out"
         c = cout
 
-    # Head: conv5, global average pool (sum), fc with raw int32 logits.
+    # Head: conv5, global average pool (int32 sums into V), fc with raw int32
+    # logits.
     conv("conv5", isa.BUF_A, isa.BUF_B, h, c)
     c5 = L["conv5"]["cout"]
     emit("gap", Instr(op=isa.OP_GAP, a_buf=isa.BUF_B, a_h=h, a_w=h, a_c=c5,
-                      o_buf=isa.BUF_C, o_c=c5, o_bits=32, o_signed=1))
+                      o_buf=isa.BUF_V, o_c=c5, o_bits=32, o_signed=1))
     fc = L["fc"]
     params.append(dict(w=fc["w"].reshape(fc["cout"], -1, 1, 1), bias=fc["bias"],
                        M=fc["M"], S=fc["S"]))
-    emit("logits", Instr(op=isa.OP_CONV, a_buf=isa.BUF_C, a_c=c5, a_bits=32, a_signed=1,
+    emit("logits", Instr(op=isa.OP_CONV, a_buf=isa.BUF_V, a_c=c5, a_bits=32, a_signed=1,
                          o_buf=isa.BUF_OUT, o_c=fc["cout"], raw_out=1, o_bits=32,
                          o_signed=1, w_base=len(params) - 1))
     peak[isa.BUF_IN] = img * img * 3

@@ -9,10 +9,14 @@ struct npe_dec_t {
   // what to run
   bool run_conv;     // dense convolution (groups 1)
   bool run_dw;       // depthwise convolution (groups = channels)
+  bool run_pool;     // max pool
+  bool run_gap;      // global average pool (sum) into V
+  bool run_fc;       // fully connected: V in, int32 out to OUT
   bool interleave;   // epilogue INTERLEAVE
   // loop bounds
   int out_h, out_w;  // output pixels
   int cin_w, cout_w; // input / output words per pixel that this layer uses
+  int out_c;         // output channels (fc: how many results go to OUT)
   int kh, kw;        // kernel size
   // input A: word address of pixel (y, x) = a_first + (y * a_w + x) * a_step
   int a_buf, a_first, a_step, a_h, a_w;
@@ -42,6 +46,9 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   const bool conv8 = (I.op == NPE_OP_CONV && I.a_bits == 8 && !I.raw_out);
   d.run_conv = conv8 && I.groups == 1;
   d.run_dw = conv8 && I.groups > 1 && I.groups == I.a_c && I.a_c == I.o_c;
+  d.run_pool = (I.op == NPE_OP_POOL_MAX);
+  d.run_gap = (I.op == NPE_OP_GAP);
+  d.run_fc = (I.op == NPE_OP_CONV && I.a_buf == NPE_BUF_V && I.raw_out);
   d.interleave = (I.epi == NPE_EPI_INTERLEAVE);
   d.out_h = I.o_h;
   d.out_w = I.o_w;
@@ -50,7 +57,8 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.cin_w = from_in ? 1 : I.a_c / NPE_P;
   d.kh = I.kh;
   d.kw = I.kw;
-  d.cout_w = I.o_c / NPE_P;
+  d.cout_w = (I.o_c + NPE_P - 1) / NPE_P; // fc: classes rounded up to words
+  d.out_c = I.o_c;
 
   // A pixel stride of 0 in the instruction means "the tensor's own channels".
   int a_pix = I.a_pix ? I.a_pix : I.a_c;

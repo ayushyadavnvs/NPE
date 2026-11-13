@@ -17,8 +17,8 @@ Semantics (the NumPy reference in npe/ref/isa_ref.py is the definition):
                int32 accumulator (logits).
   op POOL_MAX  max over the window; padding is ignored.
   op POOL_AVG  reserved (step 2).
-  op GAP       per-channel sum over H x W, int32 out (the 1/(H*W) is folded
-               into the next layer's scale).
+  op GAP       per-channel sum over H x W, int32 out into buffer V (the
+               1/(H*W) is folded into the next layer's scale).
   op ADD       reserved (step 2): out = requant(A * ma) + requant(B * mb).
 
   epilogue INTERLEAVE  out channel 2i = B channel i, 2i + 1 = result channel
@@ -41,9 +41,10 @@ EPI_NONE, EPI_INTERLEAVE, EPI_ADD = range(3)
 ACT_NONE, ACT_RELU, ACT_RELU6 = range(3)
 # padding value
 PAD_ZERO, PAD_CONST = range(2)  # CONST: per-input-channel value from params
-# buffers: on-chip arena regions, plus the two AXI streams
-BUF_IN, BUF_OUT, BUF_S0, BUF_A, BUF_B, BUF_C = range(6)
-BUF_NAMES = ["IN", "OUT", "S0", "A", "B", "C"]
+# buffers: on-chip arena regions, plus the two AXI streams. V holds int32
+# vectors (GAP output, fc input); the others hold 8-bit tensors.
+BUF_IN, BUF_OUT, BUF_S0, BUF_A, BUF_B, BUF_C, BUF_V = range(7)
+BUF_NAMES = ["IN", "OUT", "S0", "A", "B", "C", "V"]
 
 
 @dataclass

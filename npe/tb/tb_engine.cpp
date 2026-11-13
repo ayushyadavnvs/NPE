@@ -6,7 +6,9 @@
 //   Q image (NPE_Q_WORDS words)
 //   IN image (NPE_IN_PIXELS x NPE_IN_C bytes)
 //   per case: the instruction (NPE_INSTR_FIELDS x u16), buffers S0, A, B, C
-//             before it, buffers S0, A, B, C after it (one byte per channel)
+//             (one byte per channel) and V (4 bytes per channel) before it,
+//             the same after it, then u32 n_out and the n_out int32 values
+//             the instruction must stream to OUT
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -19,6 +21,7 @@ static npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)];
 static npe_word_t B[2][NPE_HALF(NPE_BUF_B_WORDS)];
 static npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)];
 static npe_wword_t W[NPE_W_WORDS];
+static npe_vword_t V[NPE_V_WORDS];
 static npe_word_t WD[NPE_WD_WORDS];
 static npe_qword_t Q[NPE_Q_WORDS];
 
@@ -46,6 +49,15 @@ template <int N> static int diff(npe_word_t buf[2][N], FILE *f) {
     for (int k = 0; k < NPE_P; k++)
       bad += ((uint8_t)buf[w & 1][w >> 1].range(8 * k + 7, 8 * k) !=
               img[NPE_P * w + k]);
+  return bad;
+}
+
+static int diff_v(FILE *f) {
+  std::vector<uint8_t> img = read_bytes(f, NPE_V_WORDS * NPE_P * 4);
+  int bad = 0;
+  for (int w = 0; w < NPE_V_WORDS; w++)
+    for (int k = 0; k < NPE_P * 4; k++)
+      bad += ((uint8_t)V[w].range(8 * k + 7, 8 * k) != img[NPE_P * 4 * w + k]);
   return bad;
 }
 
@@ -77,8 +89,20 @@ int main(int argc, char **argv) {
     load(A, f);
     load(B, f);
     load(C, f);
+    load_mem(V, f);
+    hls::stream<npe_acc_t> OUT;
     bool ran = npe_step(instr, NPE_BUF_ARGS, NPE_MEM_ARGS);
-    int bad = diff(S0, f) + diff(A, f) + diff(B, f) + diff(C, f);
+    int bad = diff(S0, f) + diff(A, f) + diff(B, f) + diff(C, f) + diff_v(f);
+    uint32_t n_out;
+    fread(&n_out, 4, 1, f);
+    std::vector<uint8_t> want = read_bytes(f, 4 * n_out);
+    for (uint32_t k = 0; k < n_out; k++) {
+      int32_t w;
+      memcpy(&w, &want[4 * k], 4);
+      if (OUT.empty() || (int32_t)OUT.read() != w)
+        bad++;
+    }
+    bad += OUT.size(); // nothing extra may be streamed
     if (!ran || bad) {
       failed++;
       printf("case %u: %s, %d wrong bytes\n", n, ran ? "ran" : "NOT RUN", bad);
