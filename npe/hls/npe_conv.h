@@ -11,8 +11,10 @@
 // blocks of P x P weights and adds the results to PO x P running sums:
 // P * P * PO * PI multipliers. One group of PO output words needs
 // kh * kw * cin_g cycles; then the sums are requantized. Loop order: output
-// pixel, output group (highest first), kernel row, kernel column, input
-// group. Words past the end of the layer's channels (a partial last group)
+// group (highest first), output pixel, kernel row, kernel column, input
+// group. With the output group outermost, a group's weights (kh * kw *
+// cin_g words) serve every pixel before the next group's are needed, so
+// weights can be streamed from DRAM once per inference. Words past the end of the layer's channels (a partial last group)
 // are masked to zero on input and not written on output.
 //
 // Input pixel of output pixel (oy, ox) and kernel position (ky, kx):
@@ -67,7 +69,9 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   int hold = 0; // idle cycles left in the current group
   const bool from_in = (d.a_buf == NPE_BUF_IN);
   int ox = 0;              // output pixel column
-  int og = d.cout_g - 1;   // output group within the pixel, descending
+  int og = d.cout_g - 1;   // output group, descending (outermost)
+  int pix = 0;             // output pixel index within the group
+  const int n_pix = d.out_h * d.out_w;
   int ky = 0, kx = 0;      // kernel position
   int ig = 0;              // input group within the pixel
   // Input position of kernel tap (0, 0) for the current output pixel, and
@@ -237,7 +241,7 @@ conv_loop:
     }
 
     // Advance, innermost first: input group, kernel column, kernel row,
-    // output group (descending), output pixel. Addresses only ever add.
+    // output pixel, output group (descending).
     w_addr++;
     if (!last_ig) {
       ig++;
@@ -255,12 +259,9 @@ conv_loop:
           a_tap = a_line;
         } else {
           ky = 0;
-          if (og != 0) {
-            og--;
-            w_addr -= 2 * d.w_per_out; // weights of the next lower group
-          } else {
-            og = d.cout_g - 1;
-            w_addr = d.w_base + og * d.w_per_out;
+          w_addr -= d.w_per_out; // the same group's weights, next pixel
+          if (pix != n_pix - 1) {
+            pix++;
             b_pixel += d.b_step;
             o_pixel += d.o_step;
             if (ox != d.out_w - 1) {
@@ -274,6 +275,17 @@ conv_loop:
               a_row += d.a_row_step;
               a_pixel = a_row;
             }
+          } else if (og != 0) { // next lower group, from the first pixel
+            pix = 0;
+            og--;
+            w_addr = d.w_base + og * d.w_per_out;
+            b_pixel = d.b_first;
+            o_pixel = d.o_first;
+            ox = 0;
+            ix0 = -d.pad_l;
+            iy0 = -d.pad_t;
+            a_row = a_origin;
+            a_pixel = a_origin;
           }
           a_line = a_pixel;
           a_tap = a_pixel;
