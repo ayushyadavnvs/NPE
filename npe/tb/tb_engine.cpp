@@ -2,7 +2,8 @@
 // the state the reference interpreter reached. The case file is written by
 // npe/tests/test_engine.py:
 //   u32 n_cases
-//   W image (NPE_W_WORDS words), Q image (NPE_Q_WORDS words)
+//   W image (NPE_W_WORDS words), WD image (NPE_WD_WORDS words),
+//   Q image (NPE_Q_WORDS words)
 //   IN image (NPE_IN_PIXELS x NPE_IN_C bytes)
 //   per case: the instruction (NPE_INSTR_FIELDS x u16), buffers S0, A, B, C
 //             before it, buffers S0, A, B, C after it (one byte per channel)
@@ -18,6 +19,7 @@ static npe_word_t A[2][NPE_HALF(NPE_BUF_A_WORDS)];
 static npe_word_t B[2][NPE_HALF(NPE_BUF_B_WORDS)];
 static npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)];
 static npe_wword_t W[NPE_W_WORDS];
+static npe_word_t WD[NPE_WD_WORDS];
 static npe_qword_t Q[NPE_Q_WORDS];
 
 static std::vector<uint8_t> read_bytes(FILE *f, size_t n) {
@@ -63,6 +65,7 @@ int main(int argc, char **argv) {
   uint32_t n_cases;
   fread(&n_cases, 4, 1, f);
   load_mem(W, f);
+  load_mem(WD, f);
   load_mem(Q, f);
   load_mem(IN, f);
   int failed = 0;

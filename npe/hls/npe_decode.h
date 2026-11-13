@@ -7,7 +7,8 @@
 // the hardware works in (words of P channels instead of channels).
 struct npe_dec_t {
   // what to run
-  bool run_conv;     // dense convolution, the only unit so far
+  bool run_conv;     // dense convolution (groups 1)
+  bool run_dw;       // depthwise convolution (groups = channels)
   bool interleave;   // epilogue INTERLEAVE
   // loop bounds
   int out_h, out_w;  // output pixels
@@ -38,8 +39,9 @@ struct npe_dec_t {
 inline npe_dec_t npe_decode(const npe_instr_t &I) {
 #pragma HLS INLINE
   npe_dec_t d;
-  d.run_conv = (I.op == NPE_OP_CONV && I.groups == 1 && I.a_bits == 8 &&
-                !I.raw_out);
+  const bool conv8 = (I.op == NPE_OP_CONV && I.a_bits == 8 && !I.raw_out);
+  d.run_conv = conv8 && I.groups == 1;
+  d.run_dw = conv8 && I.groups > 1 && I.groups == I.a_c && I.a_c == I.o_c;
   d.interleave = (I.epi == NPE_EPI_INTERLEAVE);
   d.out_h = I.o_h;
   d.out_w = I.o_w;

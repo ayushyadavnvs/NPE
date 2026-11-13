@@ -3,7 +3,7 @@
 Two suites, each packed and compiled on its own:
   shufflenet  every instruction the engine supports, on one golden image,
               starting from the buffer state the reference had at that point
-  random      random dense convolutions: kernel sizes 1-5 (also non-square),
+  random      random dense and depthwise convolutions: kernel sizes 1-5 (also non-square),
               strides, asymmetric zero padding, signed / unsigned inputs,
               channel-offset views, plain and INTERLEAVE (also in place),
               and image-input layers with constant padding
@@ -38,7 +38,7 @@ def image(m, cfg, b):
 def run_suite(name, prog, params, peak, inp=None, state=None):
     """Steps the reference through prog; every supported instruction becomes a
     case. state(m) may randomize the buffers before each instruction."""
-    hw, W, Q, cfg, skipped = pack.pack(prog, params, peak)
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak)
     d = os.path.join(BUILD, name)
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "npe_config.h"), "w") as f:
@@ -64,7 +64,8 @@ def run_suite(name, prog, params, peak, inp=None, state=None):
         n = min(len(img), len(m.buf[isa.BUF_IN]))
         img[:n] = m.buf[isa.BUF_IN][:n] & 0xFF
     with open(path, "wb") as f:
-        f.write(struct.pack("<I", len(cases)) + W.tobytes() + Q.tobytes() + img.tobytes()
+        f.write(struct.pack("<I", len(cases)) + mems["W"].tobytes() + mems["WD"].tobytes() + mems["Q"].tobytes()
+                + img.tobytes()
                 + b"".join(cases))
     if not os.path.exists(os.path.join(APDIR, "include", "ap_int.h")):
         subprocess.check_call(["git", "clone", "-q", "--depth", "1",
@@ -100,8 +101,9 @@ def random_suite(seed, count=80):
     r = lambda lo, hi: int(rng.integers(lo, hi + 1))   # noqa: E731
     for n in range(count):
         image = n % 4 == 0                  # every 4th case reads the RGB image
+        dw = n % 4 == 1 or n % 4 == 2       # half the cases are depthwise
         cin = in_c if image else P * r(1, 3)
-        cout = P * r(1, 3)
+        cout = cin if dw else P * r(1, 3)
         kh, kw = r(1, 5), r(1, 5)
         sh, sw = r(1, 2), r(1, 2)
         pt, pb, pl, pr = (r(0, k - 1) for k in (kh, kh, kw, kw))
@@ -128,8 +130,8 @@ def random_suite(seed, count=80):
                   a_buf=a_buf, a_base=a_base, a_h=ah, a_w=aw, a_c=cin, a_pix=a_pix,
                   a_off=a_off, a_signed=a_signed, o_buf=o_buf, o_base=P * r(0, 2),
                   o_h=oh, o_w=ow, o_c=cout, o_signed=0 if relu else r(0, 1),
-                  w_base=len(params))
-        if r(0, 1):
+                  groups=cin if dw else 1, w_base=len(params))
+        if r(0, 1) and not dw:
             I.epi = isa.EPI_INTERLEAVE
             if r(0, 1):      # in place: B is the first half of the output pixel
                 I.b_buf, I.b_base, I.b_pix, I.b_off = o_buf, I.o_base, 2 * cout, 0
@@ -140,9 +142,10 @@ def random_suite(seed, count=80):
         else:
             I.o_off = P * r(0, 1)
             I.o_pix = I.o_off + cout + P * r(0, 1)
-        params.append(dict(w=rng.integers(-128, 128, (cout, cin, kh, kw)),
+        params.append(dict(w=rng.integers(-128, 128, (cout, 1 if dw else cin, kh, kw)),
                            bias=rng.integers(-2 ** 15, 2 ** 15, cout),
-                           M=rng.integers(1, 2 ** 31, cout), S=rng.integers(34, 46, cout),
+                           M=rng.integers(1, 2 ** 31, cout),
+                           S=rng.integers(36, 45, cout) if dw else rng.integers(34, 46, cout),
                            pad=rng.integers(0, 256, cin)))
         prog.append(I)
         uses = [(I.o_buf, I.o_base + oh * ow * (I.o_pix or I.out_channels())),

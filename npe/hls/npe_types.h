@@ -32,7 +32,8 @@ typedef ap_uint<8 * NPE_IN_C> npe_pixel_t;      // one input image pixel
       npe_word_t C[2][NPE_HALF(NPE_BUF_C_WORDS)]
 #define NPE_BUF_ARGS IN, S0, A, B, C
 #define NPE_MEM_PARAMS                                                         \
-  const npe_wword_t W[NPE_W_WORDS], const npe_qword_t Q[NPE_Q_WORDS]
-#define NPE_MEM_ARGS W, Q
+  const npe_wword_t W[NPE_W_WORDS], const npe_word_t WD[NPE_WD_WORDS],        \
+      const npe_qword_t Q[NPE_Q_WORDS]
+#define NPE_MEM_ARGS W, WD, Q
 
 #endif // NPE_TYPES_H_
