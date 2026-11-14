@@ -24,6 +24,7 @@ weights_dram.bin: the streamed layers' weights (npe/hls/npe_wstream.h), the
 import argparse
 import json
 import os
+import re
 import struct
 
 import numpy as np
@@ -75,20 +76,24 @@ def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260
 
 
 def load_model(name):
-    """(prog, params, peak) of a model this repo can lower today."""
+    """(prog, params, peak) of a model this repo can lower today.
+    mobilenetv2 is the x0.5 test net at 96x96; mobilenetv2_w<W>_<IMG> picks
+    width and input size (e.g. mobilenetv2_w1.0_96)."""
     if name == "shufflenet":
         from quantize import read_bin  # noqa: E402
         layers, pad, _ = read_bin(os.path.join(OLD, "data", "weights.bin"))
         prog, params, names, peak = lower(layers, pad)
     else:
         from npe.compiler.lower_mobilenetv2 import build as mnv2
-        prog, params, names, peak, _ = mnv2()
+        m = re.fullmatch(r"mobilenetv2(?:_w([\d.]+)_(\d+))?", name)
+        kw = dict(width=float(m.group(1)), img=int(m.group(2))) if m.group(1) else {}
+        prog, params, names, peak, _ = mnv2(**kw)
     return prog, params, peak
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="shufflenet", choices=["shufflenet", "mobilenetv2"])
+    ap.add_argument("--model", default="shufflenet", help="shufflenet, mobilenetv2 or mobilenetv2_w<W>_<IMG>")
     ap.add_argument("--out", help="default npe/build/<model>_hw")
     ap.add_argument("--no-uram", action="store_true", help="block RAM only (PYNQ-Z2, ZedBoard)")
     ap.add_argument("--po", type=int, default=1, help="dense conv output words per cycle")

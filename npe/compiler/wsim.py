@@ -77,7 +77,7 @@ def simulate(hw, cfg, bw=0.75, fifo=64):
 def main():
     from npe.compiler.build import load_model
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="shufflenet", choices=["shufflenet", "mobilenetv2"])
+    ap.add_argument("--model", default="shufflenet", help="shufflenet, mobilenetv2 or mobilenetv2_w<W>_<IMG>")
     for kn in ("po", "pi", "pc"):
         ap.add_argument(f"--{kn}", type=int, default=1)
     ap.add_argument("--stream", default="all", choices=["none", "all", "auto"])

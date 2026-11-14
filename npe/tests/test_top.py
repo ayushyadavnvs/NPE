@@ -32,10 +32,13 @@ def shufflenet_case(n):
     return prog, params, peak, [os.path.join(root, x) for x in imgs]
 
 
-def mobilenetv2_case(n, d):
+def mobilenetv2_case(n, d, model="mobilenetv2"):
     """Random images and their reference logits, in the golden-set layout."""
+    import re
     from npe.compiler.lower_mobilenetv2 import build as mnv2
-    prog, params, names, peak, sample = mnv2()
+    m = re.fullmatch(r"mobilenetv2(?:_w([\d.]+)_(\d+))?", model)
+    kw = dict(width=float(m.group(1)), img=int(m.group(2))) if m.group(1) else {}
+    prog, params, names, peak, sample = mnv2(**kw)
     rng = np.random.default_rng(1)
     dirs = []
     for k in range(n or 4):
@@ -52,7 +55,7 @@ def mobilenetv2_case(n, d):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("n", nargs="?", type=int, default=0)
-    ap.add_argument("--model", default="shufflenet", choices=["shufflenet", "mobilenetv2"])
+    ap.add_argument("--model", default="shufflenet", help="shufflenet, mobilenetv2 or mobilenetv2_w<W>_<IMG>")
     ap.add_argument("--po", type=int, default=1)
     ap.add_argument("--pi", type=int, default=1)
     ap.add_argument("--pc", type=int, default=1)
@@ -69,7 +72,7 @@ def main():
     if a.model == "shufflenet":
         prog, params, peak, dirs = shufflenet_case(a.n)
     else:
-        prog, params, peak, dirs = mobilenetv2_case(a.n, d)
+        prog, params, peak, dirs = mobilenetv2_case(a.n, d, a.model)
     cfg, _ = build(prog, params, peak, d, po=a.po, pi=a.pi, pc=a.pc, rq=a.rq or None, rqc=a.rqc or None, ppb=a.ppb,
                    stream=a.stream, w_budget=a.w_budget, ring=a.ring)
     print(f"{a.model}: {len(prog)} instructions, "
