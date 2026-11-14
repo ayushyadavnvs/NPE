@@ -3,6 +3,7 @@ hardware) and load.bin (what the host streams into it).
 
   python3 -m npe.compiler.build [--model shufflenet|mobilenetv2] [--out DIR] [--no-uram]
                                 [--po N] [--pi N] [--pc N] [--rq N] [--rqc N] [--ppb N] [--board kv260|zcu104|pynqz2]
+                                [--stream none|all|auto] [--w-budget KB] [--ring WORDS]
 
 The memory plan (npe/compiler/memplan.py) picks UltraRAM / block RAM /
 LUTRAM for each memory so the build fits the board.
@@ -15,6 +16,10 @@ load.bin layout (all little-endian):
   then the 64-bit beats of each memory in this order, as the host sends them
   to load_in: program (mode NPE_LOAD_PROG), W, WD, Q, QD. A word is sent low bits
   first and padded with zeros to a whole number of beats.
+
+weights_dram.bin: the streamed layers' weights (npe/hls/npe_wstream.h), the
+  128-bit beats npe_wfetch reads from DRAM, once per inference. Empty when no
+  layer streams. W in load.bin then holds only the resident layers.
 """
 import argparse
 import json
@@ -23,7 +28,7 @@ import struct
 
 import numpy as np
 
-from npe.compiler import isa, memplan, pack
+from npe.compiler import isa, memplan, pack, wstream
 from npe.compiler.lower_shufflenet import OLD, ROOT, lower
 
 
@@ -34,8 +39,10 @@ def beats(words):
     return np.concatenate([words, np.zeros((n, pad), np.uint8)], axis=1).tobytes()
 
 
-def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260", rq=None, rqc=None, ppb=4):
-    hw, mems, cfg, skipped = pack.pack(prog, params, peak, po, pi, pc, rq, rqc, ppb)
+def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260", rq=None, rqc=None, ppb=4,
+          stream="none", w_budget=None, ring=None):
+    streamed = wstream.choose(prog, stream, w_budget, po, pi, pc)
+    hw, mems, cfg, skipped = pack.pack(prog, params, peak, po, pi, pc, rq, rqc, ppb, streamed, ring)
     assert not skipped, f"instructions this engine cannot run: {skipped}"
     impl, totals = memplan.apply(cfg, board, no_uram)
     cfg["NPE_MEM_ESTIMATE"] = '"URAM %d, BRAM36 %d, LUTRAM LUTs %d"' % totals
@@ -49,6 +56,8 @@ def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260
                             len(mems["Q"]), len(mems["QD"]), n_out))
         for m in (code, mems["W"], mems["WD"], mems["Q"], mems["QD"]):
             f.write(beats(m))
+    with open(os.path.join(out, "weights_dram.bin"), "wb") as f:
+        f.write(mems["WS"].tobytes())     # word bytes in order = 128-bit beats
     # What a host driver (npe/board/npe_driver.py) needs, without parsing C.
     loads, off = [], 24
     for mode, m in zip((1, 2, 3, 4, 5), (code, mems["W"], mems["WD"], mems["Q"], mems["QD"])):
@@ -58,6 +67,7 @@ def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260
     info = dict(n_instr=len(hw), n_out=n_out, loads=loads, in_c=cfg["NPE_IN_C"],
                 in_pixels=cfg["NPE_IN_PIXELS"], in_ppb=cfg["NPE_IN_PPB"],
                 in_beat_bits=cfg["NPE_IN_BEAT_BITS"],
+                ws_beats=mems["WS"].size // 16, streamed=sorted(streamed),
                 knobs={k: cfg[f"NPE_{k.upper()}"] for k in ("po", "pi", "pc", "rq", "rqc")})
     with open(os.path.join(out, "board.json"), "w") as f:
         json.dump(info, f, indent=1)
@@ -88,10 +98,15 @@ def main():
     ap.add_argument("--rqc", type=int, help="dense conv words requantized per cycle (default PO)")
     ap.add_argument("--ppb", type=int, default=4, help="image pixels per input beat (and IN banks)")
     ap.add_argument("--board", default="kv260", choices=sorted(memplan.BOARDS))
+    ap.add_argument("--stream", default="none", choices=["none", "all", "auto"],
+                    help="which dense conv layers stream their weights from DRAM (npe/compiler/wstream.py)")
+    ap.add_argument("--w-budget", type=float, help="auto: KB of W kept on chip")
+    ap.add_argument("--ring", type=int, help="W ring words (power of two)")
     a = ap.parse_args()
     out = a.out or os.path.join(ROOT, "npe", "build", f"{a.model}_hw")
     prog, params, peak = load_model(a.model)
-    cfg, n_out = build(prog, params, peak, out, a.no_uram, a.po, a.pi, a.pc, a.board, a.rq, a.rqc, a.ppb)
+    cfg, n_out = build(prog, params, peak, out, a.no_uram, a.po, a.pi, a.pc, a.board, a.rq, a.rqc, a.ppb,
+                       a.stream, a.w_budget, a.ring)
     kb = lambda words, bits: words * bits / 8 / 1024   # noqa: E731
     P = cfg["NPE_P"]
     po, pi, pc = cfg["NPE_PO"], cfg["NPE_PI"], cfg["NPE_PC"]
@@ -100,6 +115,11 @@ def main():
     print(f"  PO {po}, PI {pi}, PC {pc}, RQ {cfg['NPE_RQ']}, RQC {cfg['NPE_RQC']}, NB {cfg['NPE_NB']}; memories for {a.board}: "
           + ", ".join(f"{k} {v}" for k, v in cfg.items() if k.startswith("NPE_IMPL_")).replace("NPE_IMPL_", "")
           + f"; estimate {cfg['NPE_MEM_ESTIMATE']}")
+    wb = 8 * P * P * po * pi
+    if cfg["NPE_W_RING"]:
+        print(f"  streamed weights: {kb(cfg['NPE_WS_WORDS'], wb):.0f} KB in DRAM (weights_dram.bin), "
+              f"ring {cfg['NPE_W_RING']} words ({kb(cfg['NPE_W_RING'], wb):.0f} KB) after "
+              f"{kb(cfg['NPE_W_RING_BASE'], wb):.0f} KB resident")
     print(f"  W {kb(cfg['NPE_W_WORDS'], 8 * P * P * po * pi):.0f} KB, WD {kb(cfg['NPE_WD_WORDS'], 8 * P * pc):.0f} KB, "
           f"Q {kb(cfg['NPE_Q_WORDS'], q_bits):.0f} KB, QD {kb(cfg['NPE_QD_WORDS'], 72 * P * pc):.0f} KB, IN {cfg['NPE_IN_PIXELS'] * cfg['NPE_IN_C'] / 1024:.0f} KB")
     print("  " + ", ".join(f"{b} {kb(cfg[f'NPE_BUF_{b}_WORDS'], 8 * P):.0f} KB"

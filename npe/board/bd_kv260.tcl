@@ -2,6 +2,8 @@
 #
 #   1. HLS IP:   NPE_CFG=npe/build/<build> NPE_PRJ=hls_<build> NPE_EXPORT=1 \
 #                  vitis_hls -f npe/hls/csynth.tcl
+#                and, if the build streams weights (NPE_W_RING > 0):
+#                NPE_PRJ=hls_wfetch NPE_TOP=npe_wfetch NPE_EXPORT=1 vitis_hls -f npe/hls/csynth.tcl
 #   2. this:     NPE_IP=npe/build/hls_<build>/sol/impl/ip NPE_CFG=npe/build/<build> \
 #                  vivado -mode batch -source npe/board/bd_kv260.tcl
 #
@@ -12,23 +14,29 @@
 #   axi_dma_load  MM2S, 64 bit           -> npe_top load_in (program, weights)
 #   axi_dma_io    MM2S, NPE_IN_BEAT_BITS -> npe_top img_in (image)
 #                 S2MM, 32 bit           <- npe_top out (int32 logits)
+#   npe_wfetch    m_axi 128 bit (HP1) -> npe_top w_in (streamed weights;
+#                 only in builds with NPE_W_RING > 0)
 #   Control (npe_top s_axi_CTRL, both DMA register files) from M_AXI_HPM0_FPD;
-#   DMA memory traffic to S_AXI_HP0_FPD. No interrupts: the driver polls.
+#   DMA memory traffic to S_AXI_HP0_FPD, weight fetches to S_AXI_HP1_FPD.
+#   No interrupts: the driver polls.
 set root [file normalize [file join [file dirname [info script]] ..]]
 proc env_or {name default} {
   if {[info exists ::env($name)]} { return $::env($name) }
   return $default
 }
 set ip_dir [file normalize [env_or NPE_IP [file join $root build hls_npe sol impl ip]]]
+set fetch_ip [file normalize [env_or NPE_FETCH_IP [file join $root build hls_wfetch sol impl ip]]]
 set cfg    [file normalize [env_or NPE_CFG [file join $root build shufflenet_hw]]]
 set mhz    [env_or NPE_MHZ 200]
 set out    [file join $root build "board_[file tail $cfg]"]
 
-# Image stream width from the build's npe_config.h.
+# Image stream width and weight ring size from the build's npe_config.h.
 set beat 32
+set ring 0
 set fh [open [file join $cfg npe_config.h]]
 foreach line [split [read $fh] "\n"] {
   if {[regexp {#define NPE_IN_BEAT_BITS (\d+)} $line -> b]} { set beat $b }
+  if {[regexp {#define NPE_W_RING (\d+)} $line -> r]} { set ring $r }
 }
 close $fh
 
@@ -40,7 +48,7 @@ if {$bp ne ""} {
 } else {
   puts "WARNING: KV260 board files not installed; PS uses part defaults"
 }
-set_property ip_repo_paths $ip_dir [current_project]
+set_property ip_repo_paths [expr {$ring ? [list $ip_dir $fetch_ip] : $ip_dir}] [current_project]
 update_ip_catalog
 
 create_bd_design npe
@@ -51,7 +59,7 @@ if {$bp ne ""} {
 }
 set_property -dict [list \
   CONFIG.PSU__USE__M_AXI_GP0 {1} CONFIG.PSU__USE__M_AXI_GP1 {0} CONFIG.PSU__USE__M_AXI_GP2 {0} \
-  CONFIG.PSU__USE__S_AXI_GP2 {1} \
+  CONFIG.PSU__USE__S_AXI_GP2 {1} CONFIG.PSU__USE__S_AXI_GP3 [expr {$ring ? 1 : 0}] \
   CONFIG.PSU__FPGA_PL0_ENABLE {1} CONFIG.PSU__CRL_APB__PL0_REF_CTRL__FREQMHZ $mhz] $ps
 
 set npe [create_bd_cell -type ip -vlnv [lindex [get_ipdefs *npe_top*] 0] npe_top_0]
@@ -73,8 +81,14 @@ connect_bd_intf_net [get_bd_intf_pins axi_dma_io/M_AXIS_MM2S] [get_bd_intf_pins 
 set out_pin [get_bd_intf_pins -of_objects $npe -filter {MODE == Master && VLNV =~ "*axis*"}]
 connect_bd_intf_net $out_pin [get_bd_intf_pins axi_dma_io/S_AXIS_S2MM]
 
-# Control: PS master -> npe_top and both DMA register files.
-foreach slave {npe_top_0/s_axi_CTRL axi_dma_load/S_AXI_LITE axi_dma_io/S_AXI_LITE} {
+set slaves {npe_top_0/s_axi_CTRL axi_dma_load/S_AXI_LITE axi_dma_io/S_AXI_LITE}
+if {$ring} {
+  create_bd_cell -type ip -vlnv [lindex [get_ipdefs *npe_wfetch*] 0] npe_wfetch_0
+  connect_bd_intf_net [get_bd_intf_pins npe_wfetch_0/w_out] [get_bd_intf_pins npe_top_0/w_in]
+  lappend slaves npe_wfetch_0/s_axi_CTRL
+}
+# Control: PS master -> npe_top, both DMA register files (and the fetcher).
+foreach slave $slaves {
   apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config [list \
     Clk_master {/zynq_ultra_ps_e_0/pl_clk0 (200 MHz)} Clk_slave {Auto} Clk_xbar {Auto} \
     Master {/zynq_ultra_ps_e_0/M_AXI_HPM0_FPD} Slave "/$slave" ddr_seg {Auto} \
@@ -86,6 +100,13 @@ foreach master {axi_dma_load/M_AXI_MM2S axi_dma_io/M_AXI_MM2S axi_dma_io/M_AXI_S
     Clk_master {Auto} Clk_slave {Auto} Clk_xbar {Auto} \
     Master "/$master" Slave {/zynq_ultra_ps_e_0/S_AXI_HP0_FPD} ddr_seg {Auto} \
     intc_ip {Auto} master_apm {0}] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP0_FPD]
+}
+# Weight fetches: their own HP port (HP1), so they do not queue behind the DMAs.
+if {$ring} {
+  apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config [list \
+    Clk_master {Auto} Clk_slave {Auto} Clk_xbar {Auto} \
+    Master {/npe_wfetch_0/m_axi_gmem} Slave {/zynq_ultra_ps_e_0/S_AXI_HP1_FPD} ddr_seg {Auto} \
+    intc_ip {Auto} master_apm {0}] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP1_FPD]
 }
 # npe_top's clock and reset follow the control bus (pl_clk0).
 assign_bd_address

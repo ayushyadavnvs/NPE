@@ -19,6 +19,11 @@
 //            at + 8k. Exactly ceil(NPE_IN_PIXELS / PPB) beats (the last one
 //            padded); TUSER and TLAST are ignored, so any framing works.
 //   out      the int32 results (logits) of mode NPE_RUN, TLAST on the last.
+//   w_in     weights of the streamed layers (npe_wstream.h), NPE_WS_BITS
+//            per beat, in use order; each NPE_RUN takes exactly the words of
+//            one inference. Fed by npe_wfetch (an AXI master reading DRAM) or
+//            any other AXI-Stream source. Unused in builds without streamed
+//            layers (NPE_W_RING 0).
 //
 //   mode     what this call does (below); count: words to load, or number of
 //            instructions to run; n_out: results to send in NPE_RUN.
@@ -35,6 +40,7 @@ typedef ap_uint<16 * NPE_INSTR_FIELDS> npe_pword_t; // one packed instruction
 
 void npe_top(hls::stream<npe_load_beat_t> &load_in,
              hls::stream<npe_img_beat_t> &img_in,
-             hls::stream<npe_out_beat_t> &out, int mode, int count, int n_out);
+             hls::stream<npe_out_beat_t> &out, hls::stream<npe_ws_t> &w_in,
+             int mode, int count, int n_out);
 
 #endif // NPE_TOP_H_

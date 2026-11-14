@@ -2,8 +2,14 @@
 
   python3 npe_driver.py <dir> [image dirs...] [--runs N]
 
-<dir> holds npe.bit, npe.hwh (from bd_kv260.tcl), load.bin and board.json
-(from npe/compiler/build.py). Each image dir holds input.bin (H x W x C
+<dir> holds npe.bit, npe.hwh (from bd_kv260.tcl), load.bin, board.json and
+weights_dram.bin (from npe/compiler/build.py).
+
+Streamed weights: if the build streams any layer (board.json ws_beats > 0),
+weights_dram.bin is copied once into a DDR buffer and the fetcher IP
+(npe_wfetch) gets its address and length, then runs in auto-restart: it
+streams the weights again for every frame by itself, paced by the engine.
+Nothing per frame on the ARM. Each image dir holds input.bin (H x W x C
 uint8) and, optionally, logits.bin (int32) to check against.
 
 It loads the program and parameters once, then runs every image, checks the
@@ -19,11 +25,12 @@ import numpy as np
 from pynq import Overlay, allocate
 
 NPE_RUN = 0
-AP_START, AP_DONE, AP_IDLE = 1, 2, 4
+AP_START, AP_DONE, AP_IDLE, AUTO_RESTART = 1, 2, 4, 0x80
 
 
 class NPE:
     def __init__(self, d):
+        self.dir = d
         self.ol = Overlay(os.path.join(d, "npe.bit"))
         self.ip = self.ol.npe_top_0
         self.dma_load = self.ol.axi_dma_load
@@ -49,8 +56,29 @@ class NPE:
         while not self.ip.read(0x00) & (AP_DONE | AP_IDLE):
             pass
 
+    def start_fetcher(self):
+        """Streamed weights: DDR buffer + fetcher in auto-restart, once."""
+        n = self.info.get("ws_beats", 0)
+        if not n:
+            return
+        data = np.fromfile(os.path.join(self.dir, "weights_dram.bin"), np.uint8)
+        self.wbuf = allocate(data.size, np.uint8)
+        self.wbuf[:] = data
+        self.wbuf.flush()
+        f = self.ol.npe_wfetch_0
+        rm = f.register_map
+        addr = self.wbuf.device_address
+        if hasattr(rm, "wmem_1"):       # 64-bit address in two registers
+            f.write(rm.wmem_1.address, addr & 0xFFFFFFFF)
+            f.write(rm.wmem_2.address, addr >> 32)
+        else:
+            f.write(rm.wmem.address, addr)
+        f.write(rm.n_beats.address, n)
+        f.write(0x00, AP_START | AUTO_RESTART)
+
     def load(self):
         """Program and parameters, once (they stay on chip)."""
+        self.start_fetcher()
         for ld in self.info["loads"]:
             if ld["count"] == 0:
                 continue

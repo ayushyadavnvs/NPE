@@ -1,13 +1,17 @@
 // Drives npe_top only through its ports, the way a host would: load the
 // program and parameters from load.bin, then for each image stream the
 // pixels in and the results out, and compare them with the golden logits.
-//   tb_top <load.bin> <list file: one golden image directory per line>
+//   tb_top <load.bin> <list file: one golden image directory per line> [starve %]
+// Streamed weights: weights_dram.bin next to load.bin is the "DRAM" that
+// npe_wfetch reads before every run. With a starve percentage the weight
+// stream looks empty that often, so the engine has to wait for weights.
 #include <cstdio>
 #include <cstring>
 #include <string>
 #include <vector>
 
 #include "npe_top.h"
+#include "npe_wfetch.h"
 
 static bool read_file(const std::string &path, std::vector<uint8_t> &v) {
   FILE *f = fopen(path.c_str(), "rb");
@@ -23,7 +27,7 @@ static bool read_file(const std::string &path, std::vector<uint8_t> &v) {
 
 int main(int argc, char **argv) {
   std::vector<uint8_t> load;
-  FILE *list = argc == 3 ? fopen(argv[2], "r") : NULL;
+  FILE *list = argc >= 3 ? fopen(argv[2], "r") : NULL;
   if (!list || !read_file(argv[1], load)) {
     printf("usage: tb_top load.bin image_list\n");
     return 2;
@@ -40,6 +44,17 @@ int main(int argc, char **argv) {
   hls::stream<npe_load_beat_t> load_in;
   hls::stream<npe_img_beat_t> img_in;
   hls::stream<npe_out_beat_t> out;
+  hls::stream<npe_ws_t> w_in;
+  if (argc >= 4)
+    w_in.starve = atoi(argv[3]);
+  std::string lb(argv[1]);
+  std::string dram_path = lb.substr(0, lb.find_last_of('/') + 1) + "weights_dram.bin";
+  std::vector<uint8_t> dram_bytes;
+  read_file(dram_path, dram_bytes); // missing or empty: nothing streams
+  std::vector<npe_fetch_beat_t> dram(dram_bytes.size() / 16);
+  for (size_t b = 0; b < dram.size(); b++)
+    for (int k = 0; k < 16; k++)
+      dram[b].range(8 * k + 7, 8 * k) = dram_bytes[16 * b + k];
   for (int m = 0; m < 5; m++) {
     int n_beats = hdr[m] * ((bytes[m] + 7) / 8);
     if (pos + 8 * (size_t)n_beats > load.size()) {
@@ -54,7 +69,7 @@ int main(int argc, char **argv) {
       beat.last = (b == n_beats - 1);
       load_in.write(beat);
     }
-    npe_top(load_in, img_in, out, modes[m], hdr[m], 0);
+    npe_top(load_in, img_in, out, w_in, modes[m], hdr[m], 0);
     if (!load_in.empty()) {
       printf("load mode %d left %d beats unread\n", modes[m], (int)load_in.size());
       return 2;
@@ -85,8 +100,17 @@ int main(int argc, char **argv) {
       beat.last = 0;
       img_in.write(beat);
     }
-    npe_top(load_in, img_in, out, NPE_RUN, hdr[0], n_out);
+    if (!dram.empty())
+      npe_wfetch(dram.data(), (int)dram.size(), w_in);
+    int starve = w_in.starve;
+    npe_top(load_in, img_in, out, w_in, NPE_RUN, hdr[0], n_out);
+    w_in.starve = 0;
     bool ok = (int)out.size() == n_out;
+    if (!w_in.empty()) {
+      printf("run left %d weight beats unread\n", (int)w_in.size());
+      ok = false;
+    }
+    w_in.starve = starve;
     printf("%s:", strrchr(dir, '/') ? strrchr(dir, '/') + 1 : dir);
     for (int k = 0; k < n_out && !out.empty(); k++) {
       npe_out_beat_t beat = out.read();

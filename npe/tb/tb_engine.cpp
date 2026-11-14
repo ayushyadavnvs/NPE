@@ -24,6 +24,8 @@ static npe_word_t A[NPE_NB][NPE_ROWS(NPE_BUF_A_WORDS)];
 static npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)];
 static npe_word_t C[NPE_NB][NPE_ROWS(NPE_BUF_C_WORDS)];
 static npe_wword_t W[NPE_W_WORDS];
+static hls::stream<npe_ws_t> WS; // weight stream: unused, no layer streams here
+static npe_wring_t WR;
 static npe_vword_t V[NPE_V_WORDS];
 static npe_dwword_t WD[NPE_WD_WORDS];
 static npe_qword_t Q[NPE_Q_WORDS];

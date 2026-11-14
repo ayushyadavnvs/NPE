@@ -56,9 +56,32 @@ typedef ap_uint<8 * NPE_IN_C> npe_pixel_t;      // one input image pixel
       npe_word_t C[NPE_NB][NPE_ROWS(NPE_BUF_C_WORDS)],                         \
       npe_vword_t V[NPE_V_WORDS], hls::stream<npe_acc_t> &OUT
 #define NPE_BUF_ARGS IN, S0, A, B, C, V, OUT
+// Weight streaming (see npe_wstream.h). W holds the resident words at
+// 0 .. NPE_W_RING_BASE - 1, then a ring of NPE_W_RING words (a power of two,
+// 0 = no streamed layers) that layers with w_stream read from. Their words
+// arrive on WS, NPE_WS_BITS per beat, in the order the engine uses them.
+#ifndef NPE_W_RING
+#define NPE_W_RING 0
+#endif
+#ifndef NPE_W_RING_BASE
+#define NPE_W_RING_BASE 0
+#endif
+#ifndef NPE_WS_BITS
+#define NPE_WS_BITS 128
+#endif
+typedef ap_uint<NPE_WS_BITS> npe_ws_t; // one beat of the weight stream
+// Ring state, kept across the instructions of one run.
+struct npe_wring_t {
+  int wr;           // stream words written into the ring so far
+  int pos;          // stream word where the next streamed layer starts
+  int nbeat;        // beats of the word being assembled
+  npe_wword_t part; // the word being assembled
+};
+
 #define NPE_MEM_PARAMS                                                         \
-  const npe_wword_t W[NPE_W_WORDS], const npe_dwword_t WD[NPE_WD_WORDS],      \
-      const npe_qword_t Q[NPE_Q_WORDS], const npe_qdword_t QD[NPE_QD_WORDS]
-#define NPE_MEM_ARGS W, WD, Q, QD
+  npe_wword_t W[NPE_W_WORDS], const npe_dwword_t WD[NPE_WD_WORDS],            \
+      const npe_qword_t Q[NPE_Q_WORDS], const npe_qdword_t QD[NPE_QD_WORDS],  \
+      hls::stream<npe_ws_t> &WS, npe_wring_t &WR
+#define NPE_MEM_ARGS W, WD, Q, QD, WS, WR
 
 #endif // NPE_TYPES_H_

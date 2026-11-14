@@ -25,6 +25,14 @@ requantized per cycle).
   QD depthwise constants: one word = PC blocks of P x (bias, M, S), word
      q_base + cg.
 
+  WS   weights of streamed layers (w_stream = 1), in DRAM, not on chip. The
+     engine takes them as one stream, in use order (npe/hls/npe_wstream.h):
+     streamed layers in program order; per layer the output groups from
+     og = cout_g - 1 down to 0, each the w_per_out words that W would hold
+     for it. Their w_base is unused (0). The ring at the end of W
+     (NPE_W_RING words) holds them on chip while they are used; Q stays on
+     chip. Image layers (constant padding word) and fc stay resident.
+
   fc   a fully connected layer (1x1 conv reading int32 buffer V, raw int32
      out) uses only the low P x P bytes of W words (block po = k = 0) and
      block 0 of Q words: word w_base + ow * cin_w + iw, Q word q_base + ow.
@@ -131,10 +139,19 @@ def cdiv(a, b):
     return -(-a // b)
 
 
-def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4):
+def streamable(I):
+    """Dense conv layers whose weights can come from DRAM."""
+    return (supported(I) and I.op == isa.OP_CONV and I.groups == 1 and not is_fc(I)
+            and I.a_buf != isa.BUF_IN and I.pad_mode == isa.PAD_ZERO)
+
+
+def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4, stream=(), ring=None):
     """Returns (hw_prog, mems, cfg, skipped).
-    mems: {"W", "WD", "Q", "QD": uint8 [words, bytes per word]},
-    cfg: {macro name: value}."""
+    mems: {"W", "WD", "Q", "QD", "WS": uint8 [words, bytes per word]},
+    cfg: {macro name: value}. stream: indices of the layers whose weights
+    stream from DRAM (see streamable); ring: W ring words (default: the
+    smallest power of two that holds two groups of the largest streamed
+    layer, so one group can arrive while the other is used)."""
     rq, rqc = rq or pc, rqc or po
     assert 1 <= rq <= pc and 1 <= rqc <= po and ppb & (ppb - 1) == 0
     in_c = {I.a_c for I in prog if I.a_buf == isa.BUF_IN and supported(I)}
@@ -146,7 +163,8 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4):
         nb *= 2
     add = has_add(prog)
     ql = 13 * P if add else 9 * P             # bytes of one Q block
-    mem = {k: [] for k in ("W", "WD", "Q", "QD")}
+    mem = {k: [] for k in ("W", "WD", "Q", "QD", "WS")}
+    group_max = 0   # largest streamed group, words
     hw, skipped = [], []
     for n, I in enumerate(prog):
         if not supported(I):
@@ -164,6 +182,16 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4):
             assert I.kh * I.kw * rq >= pc, \
                 f"depthwise {I.kh}x{I.kw} cannot requantize {pc} words in time at RQ={rq}"
             hw.append(pack_depthwise(I, p, mem, pc))
+        elif n in stream:
+            assert streamable(I), f"layer {n} cannot stream its weights"
+            tmp = {"W": [], "Q": mem["Q"]}
+            J = pack_conv(I, p, tmp, add, po, pi, ppw)
+            per = I.kh * I.kw * cdiv(cdiv(I.a_c, P), pi)
+            groups = [tmp["W"][g * per:(g + 1) * per] for g in range(cdiv(I.o_c // P, po))]
+            for g in reversed(groups):          # the engine walks og downwards
+                mem["WS"] += g
+            group_max = max(group_max, per)
+            hw.append(dataclasses.replace(J, w_base=0, w_stream=1))
         else:
             hw.append(pack_conv(I, p, mem, add, po, pi, ppw))
 
@@ -172,8 +200,18 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4):
 
     cfg = {"NPE_P": P, "NPE_PO": po, "NPE_PI": pi, "NPE_PC": pc, "NPE_RQ": rq, "NPE_RQC": rqc, "NPE_NB": nb,
            "NPE_LOG2NB": nb.bit_length() - 1, "NPE_HAS_ADD": int(add)}
+    if ring is None:
+        ring = 1
+        while ring < 2 * group_max:
+            ring *= 2
+    if not group_max:
+        ring = 0
+    assert ring == 0 or (ring & (ring - 1) == 0 and ring >= group_max), \
+        f"ring of {ring} words: needs a power of two >= {group_max} (one group)"
     for k in mem:
         cfg[f"NPE_{k}_WORDS"] = max(len(mem[k]), 1)
+    cfg["NPE_W_RING"], cfg["NPE_W_RING_BASE"], cfg["NPE_WS_BITS"] = ring, len(mem["W"]), 128
+    cfg["NPE_W_WORDS"] = max(len(mem["W"]) + ring, 1)
     for b in HW_BUFS:
         cfg[f"NPE_BUF_{isa.BUF_NAMES[b]}_WORDS"] = buf_words(peak.get(b, 0))
     cfg["NPE_PROG_WORDS"] = max(len(prog), 1)
@@ -186,7 +224,7 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None, ppb=4):
         beat *= 2
     cfg["NPE_IN_BEAT_BITS"] = beat             # image AXI-Stream width
     cfg["NPE_IN_PIXELS"] = max(peak.get(isa.BUF_IN, 0) // cfg["NPE_IN_C"], 1)
-    width = {"W": P * P * po * pi, "WD": P * pc, "Q": ql * po, "QD": 9 * P * pc}
+    width = {"W": P * P * po * pi, "WD": P * pc, "Q": ql * po, "QD": 9 * P * pc, "WS": P * P * po * pi}
     mems = {k: np.frombuffer(b"".join(mem[k]), np.uint8).reshape(-1, width[k]) for k in mem}
     return hw, mems, cfg, skipped
 

@@ -102,6 +102,7 @@ class Instr:
     w_bits: int = 8
     w_base: int = 0      # parameter block index (reference) / word base (hw)
     q_base: int = 0
+    w_stream: int = 0    # hw: 1 = weights stream from DRAM through the W ring
 
     def out_channels(self):
         return 2 * self.o_c if self.epi == EPI_INTERLEAVE else self.o_c

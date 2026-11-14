@@ -2,6 +2,7 @@
 its AXI streams as a host would.
 
   python3 -m npe.tests.test_top [N] [--model shufflenet|mobilenetv2] [--po N] [--pi N] [--pc N] [--rq N] [--rqc N] [--ppb N]
+                                [--stream none|all|auto] [--w-budget KB] [--ring WORDS] [--starve PCT]
 
 shufflenet   the first N golden images (all if 0) vs the golden logits
 mobilenetv2  the MobileNetV2-shaped network on N random images (default 4)
@@ -58,14 +59,19 @@ def main():
     ap.add_argument("--rq", type=int, default=0)
     ap.add_argument("--rqc", type=int, default=0)
     ap.add_argument("--ppb", type=int, default=4)
+    ap.add_argument("--stream", default="none", choices=["none", "all", "auto"])
+    ap.add_argument("--w-budget", type=float)
+    ap.add_argument("--ring", type=int)
+    ap.add_argument("--starve", type=int, default=0, help="%% of cycles the weight stream looks empty")
     a = ap.parse_args()
-    d = os.path.join(BUILD, f"top_{a.model}_po{a.po}_pi{a.pi}_pc{a.pc}_rq{a.rq}_rqc{a.rqc}_ppb{a.ppb}")
+    d = os.path.join(BUILD, f"top_{a.model}_po{a.po}_pi{a.pi}_pc{a.pc}_rq{a.rq}_rqc{a.rqc}_ppb{a.ppb}_{a.stream}{a.w_budget or ''}_r{a.ring or 0}")
     os.makedirs(d, exist_ok=True)
     if a.model == "shufflenet":
         prog, params, peak, dirs = shufflenet_case(a.n)
     else:
         prog, params, peak, dirs = mobilenetv2_case(a.n, d)
-    cfg, _ = build(prog, params, peak, d, po=a.po, pi=a.pi, pc=a.pc, rq=a.rq or None, rqc=a.rqc or None, ppb=a.ppb)
+    cfg, _ = build(prog, params, peak, d, po=a.po, pi=a.pi, pc=a.pc, rq=a.rq or None, rqc=a.rqc or None, ppb=a.ppb,
+                   stream=a.stream, w_budget=a.w_budget, ring=a.ring)
     print(f"{a.model}: {len(prog)} instructions, "
           f"{sum(I.epi == isa.EPI_ADD for I in prog)} with ADD, NPE_HAS_ADD={cfg['NPE_HAS_ADD']}")
     lst = os.path.join(d, "images.txt")
@@ -74,8 +80,8 @@ def main():
     exe = os.path.join(d, "tb_top")
     subprocess.check_call(["g++", "-std=c++14", "-O2", "-w", f"-I{d}", f"-I{NPE}/hls",
                            f"-I{NPE}/isa", f"-I{NPE}/tb/shim", f"-I{APDIR}/include",
-                           "-o", exe, f"{NPE}/tb/tb_top.cpp", f"{NPE}/hls/npe_top.cpp"])
-    r = subprocess.run([exe, os.path.join(d, "load.bin"), lst], capture_output=True, text=True)
+                           "-o", exe, f"{NPE}/tb/tb_top.cpp", f"{NPE}/hls/npe_top.cpp", f"{NPE}/hls/npe_wfetch.cpp"])
+    r = subprocess.run([exe, os.path.join(d, "load.bin"), lst, str(a.starve)], capture_output=True, text=True)
     print(r.stdout.strip() or r.stderr.strip())
     print("TEST PASSED" if r.returncode == 0 else f"TEST FAILED (exit {r.returncode})")
     return r.returncode

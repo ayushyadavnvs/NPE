@@ -11,7 +11,9 @@
 # NPE_PRJ (project name under npe/build, default hls_npe),
 # NPE_EXPORT=1 (also export the IP for Vivado: npe/build/<NPE_PRJ>/sol/impl/ip),
 # NPE_IMPL=1 (also run Vivado place and route on the IP alone: post-route
-# utilization and timing in sol/impl/report/verilog).
+# utilization and timing in sol/impl/report/verilog),
+# NPE_TOP=npe_wfetch (synthesize the weight fetcher IP instead; it does not
+# depend on the build: NPE_PRJ=hls_wfetch NPE_TOP=npe_wfetch NPE_EXPORT=1).
 set root [file normalize [file join [file dirname [info script]] ..]]
 proc env_or {name default} {
   if {[info exists ::env($name)]} { return $::env($name) }
@@ -25,8 +27,9 @@ set clock [env_or NPE_CLOCK_NS 5]
 file mkdir [file join $root build]
 cd [file join $root build]
 open_project -reset [env_or NPE_PRJ hls_npe]
-set_top npe_top
-add_files [file join $root hls npe_top.cpp] -cflags "-I$cfg -I$root/hls -I$root/isa"
+set top [env_or NPE_TOP npe_top]
+set_top $top
+add_files [file join $root hls $top.cpp] -cflags "-I$cfg -I$root/hls -I$root/isa"
 open_solution -reset sol -flow_target vivado
 set_part $part
 create_clock -period $clock
