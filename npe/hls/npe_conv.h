@@ -133,6 +133,7 @@ conv_loop:
     const bool quiet = idle || wait; // no new input this cycle
     const bool first_in = tap0 && !wait;
     const bool last_in = last_ky && last_kx && last_ig;
+    const bool grp_end = last_in && pix == n_pix - 1 && og != 0; // next: group og - 1
     // The group ends in its last input cycle, or its last idle cycle.
     const bool done = wait ? false : idle ? (hold == 1) : (last_in && stretch == 0);
     const int iy = iy0 + ky, ix = ix0 + kx;
@@ -291,9 +292,18 @@ conv_loop:
       continue;
     }
     if (idle) {
+      const bool more = (hold != 1); // from the register, not hold - 1
       hold--;
-      if (hold > 0)
+      if (more)
         continue;
+    }
+
+    // Streamed: the next group's stream counters, flat (off the counter chain).
+    if (grp_end) {
+      s_group += d.w_per_out; // the stream holds the groups in this order
+      s_need += d.w_per_out;
+      s_delta += s_delta_step; // next group: stream up, W address down
+      g_first = true;
     }
 
     // Advance, innermost first: input group, kernel column, kernel row,
@@ -335,10 +345,6 @@ conv_loop:
             pix = 0;
             og--;
             w_addr = d.w_base + og * d.w_per_out;
-            s_group += d.w_per_out; // the stream holds the groups in this order
-            s_delta += s_delta_step; // next group: stream up, W address down
-            s_need += d.w_per_out;
-            g_first = true;
             b_pixel = d.b_first;
             o_pixel = d.o_first;
             ox = 0;
