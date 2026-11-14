@@ -109,6 +109,7 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   const bool streamed = d.w_stream;
   int s_group = WR.pos, s_addr = WR.pos;
   int s_need = WR.pos + d.w_per_out; // the ring must reach this word first
+  bool g_first = true; // at the first input cycle of a group (pixel 0)
 
   int i = 0; // cycles that did work (not waiting for weights)
 conv_loop:
@@ -121,8 +122,7 @@ conv_loop:
     const bool idle = (hold > 0);   // stretch cycle: no new input
     const bool tap0 = (ky == 0 && kx == 0 && ig == 0) && !idle;
     // Waiting for a streamed group's weights (only before its first cycle).
-    const bool wait = streamed && tap0 && pix == 0 && i < steps &&
-                      WR.wr < s_need;
+    const bool wait = streamed && g_first && WR.wr < s_need;
     npe_ws_take(WS, WR, W, streamed ? s_group : WR.pos);
     const int i_now = i;
     if (!wait)
@@ -186,6 +186,13 @@ conv_loop:
         if (k - j == pend_k)
           bw = pend_b[k];
       rb[j] = bw;
+      // Quant block of that word: PO constant slices, one picked (a run-time
+      // shift of the whole Q word costs ~50k LUT at PO 4).
+      ap_uint<NPE_QL> qs = 0;
+    conv_rq_q:
+      for (int k = j; k < NPE_PO; k += NPE_RQC)
+        if (k - j == pend_k)
+          qs = quant.range(k * NPE_QL + NPE_QL - 1, k * NPE_QL);
     conv_rq_lane:
       for (int o = 0; o < NPE_P; o++) {
         npe_acc_t sum = 0, bias = 0;
@@ -195,15 +202,16 @@ conv_loop:
         for (int k = j; k < NPE_PO; k += NPE_RQC) {
           if (k - j == pend_k) {
             sum = pend[k][o];
-            const int q = k * NPE_QL;
-            bias = quant.range(q + 32 * o + 31, q + 32 * o);
-            M = quant.range(q + 32 * NPE_P + 32 * o + 31, q + 32 * NPE_P + 32 * o);
-            S = quant.range(q + 64 * NPE_P + 8 * o + 5, q + 64 * NPE_P + 8 * o);
-#if NPE_HAS_ADD
-            Mb = quant.range(q + 72 * NPE_P + 32 * o + 31, q + 72 * NPE_P + 32 * o);
-#endif
           }
         }
+        bias = qs.range(32 * o + 31, 32 * o);
+        M = qs.range(32 * NPE_P + 32 * o + 31, 32 * NPE_P + 32 * o);
+        S = qs.range(64 * NPE_P + 8 * o + 5, 64 * NPE_P + 8 * o);
+        if (S == 0) // no word pending: keep the rounding shift defined
+          S = 1;
+#if NPE_HAS_ADD
+        Mb = qs.range(72 * NPE_P + 32 * o + 31, 72 * NPE_P + 32 * o);
+#endif
         ap_int<48> extra = 0; // ADD epilogue: b * Mb joins before the rounding
         if (NPE_HAS_ADD && d.add)
           extra = npe_lane(bw, o, d.b_signed) * Mb;
@@ -274,6 +282,7 @@ conv_loop:
     }
     if (!step || wait)
       continue;
+    g_first = false;
     if (!idle && last_in && stretch > 0) { // start the idle cycles
       hold = stretch;
       continue;
@@ -328,6 +337,7 @@ conv_loop:
             s_group += d.w_per_out; // the stream holds the groups in this order
             s_addr = s_group;
             s_need += d.w_per_out;
+            g_first = true;
             b_pixel = d.b_first;
             o_pixel = d.o_first;
             ox = 0;
