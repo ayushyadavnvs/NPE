@@ -57,7 +57,7 @@ def frame_cycles(prog, cfg):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="shufflenet", choices=["shufflenet", "mobilenetv2"])
+    ap.add_argument("--model", default="shufflenet", help="shufflenet, mobilenetv2 or mobilenetv2_w<W>_<IMG>")
     ap.add_argument("--mhz", type=float, default=200)
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--po", type=int, default=1)
