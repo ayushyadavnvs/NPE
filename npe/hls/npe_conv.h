@@ -113,6 +113,9 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   const int s_delta_step = 2 * d.w_per_out;
   int s_need = WR.pos + d.w_per_out; // the ring must reach this word first
   bool g_first = true; // at the first input cycle of a group (pixel 0)
+  bool have = false;   // the ring held the group's words at the start of
+                       // the last cycle (registered: one cycle late is safe)
+  bool last_pix = (n_pix == 1); // pix == n_pix - 1, kept as a flag
 
   int i = 0; // cycles that did work (not waiting for weights)
 conv_loop:
@@ -125,7 +128,8 @@ conv_loop:
     const bool idle = (hold > 0);   // stretch cycle: no new input
     const bool tap0 = (ky == 0 && kx == 0 && ig == 0) && !idle;
     // Waiting for a streamed group's weights (only before its first cycle).
-    const bool wait = streamed && g_first && WR.wr < s_need;
+    const bool wait = streamed && g_first && !have;
+    have = (WR.wr >= s_need);
     npe_ws_take(WS, WR, W, streamed ? s_group : WR.pos);
     const int i_now = i;
     if (!wait)
@@ -133,7 +137,7 @@ conv_loop:
     const bool quiet = idle || wait; // no new input this cycle
     const bool first_in = tap0 && !wait;
     const bool last_in = last_ky && last_kx && last_ig;
-    const bool grp_end = last_in && pix == n_pix - 1 && og != 0; // next: group og - 1
+    const bool grp_end = last_in && last_pix && og != 0; // next: group og - 1
     // The group ends in its last input cycle, or its last idle cycle.
     const bool done = wait ? false : idle ? (hold == 1) : (last_in && stretch == 0);
     const int iy = iy0 + ky, ix = ix0 + kx;
@@ -304,6 +308,7 @@ conv_loop:
       s_need += d.w_per_out;
       s_delta += s_delta_step; // next group: stream up, W address down
       g_first = true;
+      have = false; // check again against the new s_need
     }
 
     // Advance, innermost first: input group, kernel column, kernel row,
@@ -326,7 +331,8 @@ conv_loop:
         } else {
           ky = 0;
           w_addr -= d.w_per_out; // the same group's weights, next pixel
-          if (pix != n_pix - 1) {
+          if (!last_pix) {
+            last_pix = (pix == n_pix - 2);
             pix++;
             b_pixel += d.b_step;
             o_pixel += d.o_step;
@@ -343,6 +349,7 @@ conv_loop:
             }
           } else if (og != 0) { // next lower group, from the first pixel
             pix = 0;
+            last_pix = (n_pix == 1);
             og--;
             w_addr = d.w_base + og * d.w_per_out;
             b_pixel = d.b_first;
