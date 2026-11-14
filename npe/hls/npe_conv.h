@@ -104,10 +104,13 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   // Pending group: its Q word, first output word, real words, and the next
   // of its words to requantize (pend_k >= pend_n: nothing pending).
   int pend_q = d.q_base, pend_o = 0, pend_n = 0, pend_k = 0;
-  // Streamed weights: stream word of the current group's first word, and of
-  // the word read this cycle.
+  // Streamed weights: stream word of the current group's first word.
   const bool streamed = d.w_stream;
-  int s_group = WR.pos, s_addr = WR.pos;
+  // Stream word = w_addr + s_delta (changes only between groups, so the
+  // per-cycle counters stay as they are).
+  int s_group = WR.pos;
+  int s_delta = WR.pos - (d.w_base + (d.cout_g - 1) * d.w_per_out);
+  const int s_delta_step = 2 * d.w_per_out;
   int s_need = WR.pos + d.w_per_out; // the ring must reach this word first
   bool g_first = true; // at the first input cycle of a group (pixel 0)
 
@@ -251,7 +254,7 @@ conv_loop:
 
     // Multiply-accumulate: PO x P outputs, PI x P inputs.
     npe_wword_t weights =
-        W[streamed ? NPE_W_RING_BASE + (s_addr & (NPE_W_RING - 1)) : w_addr];
+        W[streamed ? NPE_W_RING_BASE + ((w_addr + s_delta) & (NPE_W_RING - 1)) : w_addr];
   conv_out_word:
     for (int po = 0; po < NPE_PO; po++) {
     conv_out_ch:
@@ -296,7 +299,6 @@ conv_loop:
     // Advance, innermost first: input group, kernel column, kernel row,
     // output pixel, output group (descending).
     w_addr++;
-    s_addr++;
     if (!last_ig) {
       ig++;
       a_word += NPE_PI;
@@ -314,7 +316,6 @@ conv_loop:
         } else {
           ky = 0;
           w_addr -= d.w_per_out; // the same group's weights, next pixel
-          s_addr -= d.w_per_out;
           if (pix != n_pix - 1) {
             pix++;
             b_pixel += d.b_step;
@@ -335,7 +336,7 @@ conv_loop:
             og--;
             w_addr = d.w_base + og * d.w_per_out;
             s_group += d.w_per_out; // the stream holds the groups in this order
-            s_addr = s_group;
+            s_delta += s_delta_step; // next group: stream up, W address down
             s_need += d.w_per_out;
             g_first = true;
             b_pixel = d.b_first;
