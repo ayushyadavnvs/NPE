@@ -108,6 +108,7 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   // the word read this cycle.
   const bool streamed = d.w_stream;
   int s_group = WR.pos, s_addr = WR.pos;
+  int s_need = WR.pos + d.w_per_out; // the ring must reach this word first
 
   int i = 0; // cycles that did work (not waiting for weights)
 conv_loop:
@@ -121,7 +122,7 @@ conv_loop:
     const bool tap0 = (ky == 0 && kx == 0 && ig == 0) && !idle;
     // Waiting for a streamed group's weights (only before its first cycle).
     const bool wait = streamed && tap0 && pix == 0 && i < steps &&
-                      WR.wr < s_group + d.w_per_out;
+                      WR.wr < s_need;
     npe_ws_take(WS, WR, W, streamed ? s_group : WR.pos);
     const int i_now = i;
     if (!wait)
@@ -326,6 +327,7 @@ conv_loop:
             w_addr = d.w_base + og * d.w_per_out;
             s_group += d.w_per_out; // the stream holds the groups in this order
             s_addr = s_group;
+            s_need += d.w_per_out;
             b_pixel = d.b_first;
             o_pixel = d.o_first;
             ox = 0;
