@@ -58,6 +58,8 @@ def main():
     ap.add_argument("--rq", type=int, default=0)
     ap.add_argument("--rqc", type=int, default=0)
     ap.add_argument("--ppb", type=int, default=4)
+    ap.add_argument("--prepare-only", action="store_true",
+                    help="write npe_config.h, load.bin and images.txt only (for Vitis csim / cosim)")
     a = ap.parse_args()
     d = os.path.join(BUILD, f"top_{a.model}_po{a.po}_pi{a.pi}_pc{a.pc}_rq{a.rq}_rqc{a.rqc}_ppb{a.ppb}")
     os.makedirs(d, exist_ok=True)
@@ -71,6 +73,9 @@ def main():
     lst = os.path.join(d, "images.txt")
     with open(lst, "w") as f:
         f.write("\n".join(dirs) + "\n")
+    if a.prepare_only:
+        print(f"wrote {d}: npe_config.h, load.bin, images.txt")
+        return 0
     exe = os.path.join(d, "tb_top")
     subprocess.check_call(["g++", "-std=c++14", "-O2", "-w", f"-I{d}", f"-I{NPE}/hls",
                            f"-I{NPE}/isa", f"-I{NPE}/tb/shim", f"-I{APDIR}/include",
