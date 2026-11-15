@@ -29,6 +29,7 @@ MODELS = {
     "mobilenetv2": dict(kind="float", url=f"{ZOO}/mobilenet/model/mobilenetv2-12.onnx"),
     "resnet8": dict(kind="tflite", url=f"{TINY}/image_classification/trained_models/pretrainedResnet_quant.tflite"),
     "dscnn": dict(kind="tflite", url=f"{TINY}/keyword_spotting/trained_models/kws_ref_model.tflite"),
+    "vww": dict(kind="tflite", url=f"{TINY}/visual_wake_words/trained_models/vww_96_int8.tflite"),
 }
 MEAN = np.array([0.485, 0.456, 0.406])
 STD = np.array([0.229, 0.224, 0.225])
@@ -79,7 +80,11 @@ def inputs(name, n, prog):
         out = []
         for d in golden_images(n):
             x = np.fromfile(os.path.join(d, "input.bin"), np.uint8).reshape(224, 224, 3).astype(np.int64)
-            if h != 224:
+            if h != 224 and 224 % h:
+                yy = (np.arange(h) * 224) // h
+                xx = (np.arange(w) * 224) // w
+                x = x[yy][:, xx]
+            elif h != 224:
                 f = 224 // h
                 x = x.reshape(h, f, w, f, 3).mean((1, 3)).round().astype(np.int64)
             out.append(x)
