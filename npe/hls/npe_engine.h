@@ -5,6 +5,7 @@
 #include "npe_dwconv.h"
 #include "npe_fc.h"
 #include "npe_gap.h"
+#include "npe_out.h"
 #include "npe_pool.h"
 
 // Runs one instruction. Returns false if no unit of this build can run it.
@@ -29,6 +30,10 @@ inline bool npe_step(const npe_instr_t &instr, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   }
   if (d.run_fc) {
     npe_fc(d, NPE_BUF_ARGS, NPE_MEM_ARGS);
+    return true;
+  }
+  if (d.run_out) {
+    npe_out(d, NPE_BUF_ARGS);
     return true;
   }
   return false;

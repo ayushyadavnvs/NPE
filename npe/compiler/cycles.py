@@ -35,6 +35,8 @@ def instr_cycles(I, po=1, pi=1, pc=1, rq=None, rqc=None):
         return "fc", cout_w * (cin_w + DEPTH["fc"] + P) + CALL, I.o_c * I.a_c
     if I.op == isa.OP_POOL_MAX:
         return "pool", pix * cdiv(cout_w, pc) * taps + DEPTH["pool"] + CALL, 0
+    if I.op == isa.OP_OUT:
+        return "out", pix * cout_w * P + DEPTH.get("out", 3) + CALL, 0
     if I.op == isa.OP_GAP:
         return "gap", I.a_h * I.a_w * cout_w + DEPTH["gap"] + CALL, 0
     if pack.is_depthwise(I):

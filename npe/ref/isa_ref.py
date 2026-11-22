@@ -108,6 +108,9 @@ class Machine:
             r = self._pool_max(a, I)
         elif I.op == isa.OP_GAP:
             r = a.sum(axis=(0, 1), keepdims=True)
+        elif I.op == isa.OP_OUT:
+            assert I.o_buf == isa.BUF_OUT and (I.o_h, I.o_w) == (I.a_h, I.a_w)
+            r = a[..., :I.o_c]
         else:
             raise NotImplementedError(f"op {I.op}")
         if I.epi == isa.EPI_INTERLEAVE:

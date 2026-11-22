@@ -3,6 +3,10 @@
 
 #include "npe_types.h"
 
+#ifndef NPE_HAS_OUT
+#define NPE_HAS_OUT 0 // no feature-map output unit unless the program has one
+#endif
+
 // An instruction after decoding: everything the datapath needs, in the units
 // the hardware works in (words of P channels instead of channels).
 struct npe_dec_t {
@@ -12,6 +16,7 @@ struct npe_dec_t {
   bool run_pool;     // max pool
   bool run_gap;      // global average pool (sum) into V
   bool run_fc;       // fully connected: V in, int32 out to OUT
+  bool run_out;      // feature map of A out to OUT (op OUT)
   bool interleave;   // epilogue INTERLEAVE
   bool add;          // epilogue ADD (residual)
   bool use_b;        // the epilogue reads operand B
@@ -21,7 +26,7 @@ struct npe_dec_t {
   int cin_w, cout_w; // input / output words per pixel that this layer uses
   int cin_g, cout_g; // conv: input / output word groups (of PI / PO words)
   int ch_g;          // depthwise, pool: channel word groups (of PC words)
-  int out_c;         // output channels (fc: how many results go to OUT)
+  int out_c;         // output channels (fc, OUT: how many results per pixel go to OUT)
   int kh, kw;        // kernel size
   // input A: word address of pixel (y, x) = a_first + (y * a_w + x) * a_step
   int a_buf, a_first, a_step, a_h, a_w;
@@ -54,6 +59,7 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.run_pool = (I.op == NPE_OP_POOL_MAX);
   d.run_gap = (I.op == NPE_OP_GAP);
   d.run_fc = (I.op == NPE_OP_CONV && I.a_buf == NPE_BUF_V && I.raw_out);
+  d.run_out = NPE_HAS_OUT && (I.op == NPE_OP_OUT);
   d.interleave = (I.epi == NPE_EPI_INTERLEAVE);
   d.add = NPE_HAS_ADD && (I.epi == NPE_EPI_ADD);
   d.use_b = d.interleave || d.add;
@@ -65,7 +71,7 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
   d.cin_w = from_in ? 1 : I.a_c / NPE_P;
   d.kh = I.kh;
   d.kw = I.kw;
-  d.cout_w = (I.o_c + NPE_P - 1) / NPE_P; // fc: classes rounded up to words
+  d.cout_w = (I.o_c + NPE_P - 1) / NPE_P; // fc, OUT: rounded up to words
   d.out_c = I.o_c;
   d.cin_g = (d.cin_w + NPE_PI - 1) / NPE_PI;
   d.cout_g = (d.cout_w + NPE_PO - 1) / NPE_PO;

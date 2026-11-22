@@ -29,6 +29,8 @@ MODELS = {
     "mobilenetv2": dict(kind="float", url=f"{ZOO}/mobilenet/model/mobilenetv2-12.onnx"),
     "resnet8": dict(kind="tflite", url=f"{TINY}/image_classification/trained_models/pretrainedResnet_quant.tflite"),
     "dscnn": dict(kind="tflite", url=f"{TINY}/keyword_spotting/trained_models/kws_ref_model.tflite"),
+    "ad": dict(kind="tflite", url=f"{TINY}/anomaly_detection/trained_models/ad01_int8.tflite"),
+    "fomo": dict(kind="fomo", url=f"{ZOO}/mobilenet/model/mobilenetv2-12.onnx", img=96, classes=3),
     "vww": dict(kind="tflite", url=f"{TINY}/visual_wake_words/trained_models/vww_96_int8.tflite"),
 }
 MEAN = np.array([0.485, 0.456, 0.406])
@@ -59,6 +61,11 @@ def prepare(name):
     elif kind == "float":
         from npe.frontend import ptq
         ptq.run(fetch(name), out, os.path.join(OLD, "data", "board_test"), 64, MEAN, STD)
+    elif kind == "fomo":
+        from npe.frontend import fomo, ptq
+        f = os.path.join(DIR, "src", "fomo_float.onnx")
+        onnx.save(fomo.build(fetch(name), MODELS[name]["img"], MODELS[name]["classes"]), f)
+        ptq.run(f, out, os.path.join(OLD, "data", "board_test"), 64, MEAN, STD)
     else:
         from npe.frontend.tflite2onnx import convert
         onnx.save(convert(fetch(name)), out)

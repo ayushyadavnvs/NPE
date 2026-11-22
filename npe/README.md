@@ -9,13 +9,14 @@ rationale: the "Generalization plan" section of the project analysis doc.
 | `ref/isa_ref.py` | NumPy interpreter of the instruction set; the definition every other part is checked against |
 | `frontend/onnx_import.py` | ONNX importer: a quantized (QDQ) ONNX model to the program, weights and buffer plan (layouts for channel counts that are not multiples of 8, concat + shuffle as INTERLEAVE, residual Add as the ADD epilogue) |
 | `frontend/ptq.py` | Hardware-aware post-training quantizer: float ONNX to QDQ ONNX the importer takes (BN and input normalization folded, shared concat scales) |
-| `frontend/tflite2onnx.py` | TFLite int8 model to QDQ ONNX, integers kept (MLPerf Tiny ResNet-8, DS-CNN) |
+| `frontend/tflite2onnx.py` | TFLite int8 model to QDQ ONNX, integers kept (MLPerf Tiny ResNet-8, DS-CNN, VWW, anomaly detection: an MLP becomes 1x1 convs on a 1 x 1 map) |
+| `frontend/fomo.py` | FOMO-style detector: MobileNetV2 trunk cut at stride 8 + 1x1 conv head, a per-cell class map output (random head: an engine test, not a trained detector) |
 | `frontend/export_golden.py` | The golden ShuffleNet x0.5 `weights.bin` as QDQ ONNX (exact requant integers in metadata) |
-| `frontend/models.py` | The target models: download and convert to QDQ ONNX in `npe/build/models/` |
+| `frontend/models.py` | The models: download and convert to QDQ ONNX in `npe/build/models/` (ShuffleNetV2 x0.5/x1.0, MobileNetV2, MLPerf Tiny ResNet-8, DS-CNN, VWW and AD, FOMO) |
 | `tests/test_onnx_import.py` | Importer checks: golden 104 bit-exact, each model vs ONNX Runtime / TFLite, per instruction vs ONNX Runtime, `--hw` through the HLS top level |
 | `compiler/lower_shufflenet.py` | Earlier hand-written front end for the old ShuffleNet `weights.bin` (kept as a cross-check) |
 | `compiler/pack.py` | Packs a program's weights and quant constants into the engine's word memories and writes `npe_config.h` |
-| `hls/` | The HLS engine: `npe_decode.h` (instruction to datapath settings), `npe_conv.h` (dense KxK conv unit with padding), `npe_dwconv.h` (depthwise conv), `npe_pool.h` (max pool), `npe_gap.h` (global average pool into V), `npe_fc.h` (fully connected, int32 out to the OUT stream), `npe_engine.h` (dispatch) |
+| `hls/` | The HLS engine: `npe_decode.h` (instruction to datapath settings), `npe_conv.h` (dense KxK conv unit with padding), `npe_dwconv.h` (depthwise conv), `npe_pool.h` (max pool), `npe_gap.h` (global average pool into V), `npe_fc.h` (fully connected, int32 out to the OUT stream), `npe_out.h` (feature map out to the OUT stream, op OUT; only in builds that use it), `npe_engine.h` (dispatch) |
 | `tb/tb_engine.cpp`, `tests/test_engine.py` | Engine compiled with g++ vs the reference, instruction by instruction (ShuffleNet + random cases) |
 | `hls/npe_top.h/.cpp` | Top level: AXI-Lite control, program/weight loading and image input over AXI-Stream, int32 results out over AXI-Stream |
 | `compiler/build.py` | Writes `npe_config.h` and `load.bin` (the host's load stream) for a model |

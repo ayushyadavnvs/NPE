@@ -48,6 +48,8 @@ def ort_input(p, x):
     s = np.broadcast_to(np.asarray(p.in_scale, np.float64).reshape(-1), (p.in_shape[2],))
     z = np.broadcast_to(np.asarray(p.in_zp, np.float64).reshape(-1), (p.in_shape[2],))
     real = (x - p.in_offset - z) * s
+    if p.onnx_in_shape is not None:     # folded vector input: same element order
+        return real.astype(np.float32).reshape(1, *p.onnx_in_shape)
     return real.astype(np.float32).transpose(2, 0, 1)[None]
 
 
@@ -67,23 +69,40 @@ def compare(name, n):
         ind = tfl.get_input_details()[0]
         fc = [o for o in tfl._get_ops_details() if o["op_name"] == "FULLY_CONNECTED"][-1]["outputs"][0]
         fs, fz = tfl._get_tensor_details(fc, 0)["quantization"]
+        fs_in, fz_in = ind["quantization"]
     xs = models.inputs(name, n, p)
     agree = agree_t = 0
-    err = []
+    err, score, cells = [], [], []
     for x in xs:
         e = Machine(p.params, p.peak).run(p.prog, x).reshape(-1) * p.out_scale
-        o = sess.run(None, {sess.get_inputs()[0].name: ort_input(p, x)})[0].reshape(-1)
+        o = sess.run(None, {sess.get_inputs()[0].name: ort_input(p, x)})[0]
+        if o.ndim == 4:     # feature-map output: NCHW -> the engine's HWC
+            o = o[0].transpose(1, 2, 0)
+            k = o.shape[-1]
+            cells.append((e.reshape(-1, k).argmax(1) == o.reshape(-1, k).argmax(1)).mean())
+        o = o.reshape(-1)
         agree += e.argmax() == o.argmax()
         err.append(np.abs(e - o).max() / max(np.abs(o).max(), 1e-9))
         if tfl is not None:
-            q = (x - p.in_offset).reshape(1, *x.shape).astype(np.int8)
+            q = (x - p.in_offset).reshape(ind["shape"]).astype(np.int8)
             tfl.set_tensor(ind["index"], q)
             tfl.invoke()
             t = (tfl.get_tensor(fc).astype(np.float64).reshape(-1) - fz) * fs
             agree_t += e.argmax() == t.argmax()
+            if t.size == x.size:     # autoencoder: anomaly score = reconstruction MSE
+                xr = (x.reshape(-1) - p.in_offset - fz_in) * fs_in
+                score.append((((xr - e) ** 2).mean(), ((xr - t) ** 2).mean()))
     extra = f", top-1 same as TFLite {agree_t}/{len(xs)}" if tfl is not None else ""
     print(f"{name:16s} {len(p.prog):3d} instructions: top-1 same as ONNX Runtime {agree}/{len(xs)}"
           f"{extra}; logit error vs ONNX Runtime median {np.median(err):.1%} max {np.max(err):.1%}")
+    if cells:
+        print(f"{'':16s} per-cell class (argmax over channels) same as ONNX Runtime: "
+              f"{np.mean(cells):.2%} of cells")
+    if score:
+        sc = np.array(score)
+        rel = np.abs(sc[:, 0] - sc[:, 1]) / sc[:, 1]
+        print(f"{'':16s} anomaly score (reconstruction MSE) vs TFLite: median {np.median(rel):.2%}, "
+              f"max {rel.max():.2%} apart")
     for note in p.notes:
         print("   ", note)
     return 0
@@ -145,7 +164,7 @@ def layerwise(name, n):
             m.write(r.grp.buf, r.grp.base, e, r.pix, r.off)
 
         for L, I in zip([L for L in imp.layers if L.t >= 0], low.prog):
-            if L.kind in ("gap", "fc"):
+            if L.kind in ("gap", "fc", "out"):   # no 8-bit output (OUT copies a checked map)
                 continue
             for t in (L.x, L.add, L.ib):
                 if t is not None:

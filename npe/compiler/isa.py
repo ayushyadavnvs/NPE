@@ -20,6 +20,9 @@ Semantics (the NumPy reference in npe/ref/isa_ref.py is the definition):
   op GAP       per-channel sum over H x W, int32 out into buffer V (the
                1/(H*W) is folded into the next layer's scale).
   op ADD       reserved (a standalone add; residuals use the ADD epilogue).
+  op OUT       stream the first o_c channels of each pixel of A (H x W, HWC
+               order) to the OUT stream as int32: a feature-map output
+               (detection heatmaps, segmentation, several heads in turn).
 
   epilogue INTERLEAVE  out channel 2i = B channel i, 2i + 1 = result channel
                i (concat + channel shuffle of two branches, no extra pass).
@@ -41,7 +44,7 @@ Semantics (the NumPy reference in npe/ref/isa_ref.py is the definition):
 from dataclasses import dataclass, fields
 
 # ops
-OP_CONV, OP_POOL_MAX, OP_POOL_AVG, OP_GAP, OP_ADD = range(5)
+OP_CONV, OP_POOL_MAX, OP_POOL_AVG, OP_GAP, OP_ADD, OP_OUT = range(6)
 # epilogues
 EPI_NONE, EPI_INTERLEAVE, EPI_ADD = range(3)
 # activations
@@ -118,7 +121,7 @@ def c_header():
         "",
         "#include <stdint.h>",
         "",
-        "enum { NPE_OP_CONV, NPE_OP_POOL_MAX, NPE_OP_POOL_AVG, NPE_OP_GAP, NPE_OP_ADD };",
+        "enum { NPE_OP_CONV, NPE_OP_POOL_MAX, NPE_OP_POOL_AVG, NPE_OP_GAP, NPE_OP_ADD, NPE_OP_OUT };",
         "enum { NPE_EPI_NONE, NPE_EPI_INTERLEAVE, NPE_EPI_ADD };",
         "enum { NPE_ACT_NONE, NPE_ACT_RELU, NPE_ACT_RELU6 };",
         "enum { NPE_PAD_ZERO, NPE_PAD_CONST };",

@@ -61,6 +61,11 @@ def is_fc(I):
             and I.raw_out == 1)
 
 
+def n_results(prog):
+    """int32 results a run streams out: fc logits and OUT feature maps."""
+    return sum(I.o_h * I.o_w * I.o_c for I in prog if I.o_buf == isa.BUF_OUT)
+
+
 def has_add(prog):
     return any(I.epi == isa.EPI_ADD for I in prog)
 
@@ -68,7 +73,7 @@ def has_add(prog):
 def supported(I):
     """What the engine executes: dense and depthwise conv on 8-bit data, max
     pool, GAP, and fc (int32 in, raw int32 out)."""
-    if I.op == isa.OP_POOL_MAX or I.op == isa.OP_GAP or is_fc(I):
+    if I.op in (isa.OP_POOL_MAX, isa.OP_GAP, isa.OP_OUT) or is_fc(I):
         return True
     return (I.op == isa.OP_CONV and (I.groups == 1 or is_depthwise(I))
             and I.a_bits == 8 and I.o_bits == 8 and I.w_bits == 8 and not I.raw_out)
@@ -88,6 +93,12 @@ def check(I):
         assert I.a_buf in HW_BUFS and I.o_buf == isa.BUF_V and I.o_bits == 32
         words(I.a_c, I.a_pix, I.a_off, I.a_base, I.o_base, I.o_off)
         assert I.o_c == I.a_c and I.o_pix in (0, I.o_c) and I.epi == isa.EPI_NONE
+        return
+    if I.op == isa.OP_OUT:
+        assert I.a_buf in HW_BUFS and I.o_buf == isa.BUF_OUT and I.a_bits == 8
+        assert (I.o_h, I.o_w) == (I.a_h, I.a_w) and 0 < I.o_c <= I.a_c
+        words(I.a_c, I.a_pix, I.a_off, I.a_base)
+        assert I.o_base == 0 and I.epi == isa.EPI_NONE
         return
     if I.op == isa.OP_POOL_MAX:
         assert I.a_buf in HW_BUFS and I.o_buf in HW_BUFS and I.a_buf != I.o_buf
@@ -150,7 +161,7 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None):
             skipped.append(n)
             continue
         check(I)
-        if I.op in (isa.OP_POOL_MAX, isa.OP_GAP):     # no parameters
+        if I.op in (isa.OP_POOL_MAX, isa.OP_GAP, isa.OP_OUT):     # no parameters
             hw.append(I)
             continue
         p = params[I.w_base]
@@ -167,13 +178,14 @@ def pack(prog, params, peak, po=1, pi=1, pc=1, rq=None, rqc=None):
         return cdiv(cdiv(elems, P) + nb, nb) * nb
 
     cfg = {"NPE_P": P, "NPE_PO": po, "NPE_PI": pi, "NPE_PC": pc, "NPE_RQ": rq, "NPE_RQC": rqc, "NPE_NB": nb,
-           "NPE_LOG2NB": nb.bit_length() - 1, "NPE_HAS_ADD": int(add)}
+           "NPE_LOG2NB": nb.bit_length() - 1, "NPE_HAS_ADD": int(add),
+           "NPE_HAS_OUT": int(any(I.op == isa.OP_OUT for I in prog))}
     for k in mem:
         cfg[f"NPE_{k}_WORDS"] = max(len(mem[k]), 1)
     for b in HW_BUFS:
         cfg[f"NPE_BUF_{isa.BUF_NAMES[b]}_WORDS"] = buf_words(peak.get(b, 0))
     cfg["NPE_PROG_WORDS"] = max(len(prog), 1)
-    cfg["NPE_OUT_MAX"] = max(sum(I.o_c for I in prog if I.o_buf == isa.BUF_OUT), 1)
+    cfg["NPE_OUT_MAX"] = max(n_results(prog), 1)
     cfg["NPE_V_WORDS"] = max((peak.get(isa.BUF_V, 0) + P - 1) // P, 1)
     in_c = {I.a_c for n, I in enumerate(prog) if I.a_buf == isa.BUF_IN and n not in skipped}
     assert len(in_c) <= 1, "every layer reading the image must use all its channels"

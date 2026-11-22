@@ -37,7 +37,11 @@ def load_images(d, n, hw):
         for f in sorted(files):
             if f == "input.bin":
                 a = np.fromfile(os.path.join(root, f), np.uint8)
-                out.append(a.reshape(hw[0], hw[1], -1))
+                s = int(round((a.size / 3) ** 0.5))     # square RGB images
+                a = a.reshape(s, s, 3)
+                if (s, s) != tuple(hw):                 # nearest-neighbour resample
+                    a = a[(np.arange(hw[0]) * s) // hw[0]][:, (np.arange(hw[1]) * s) // hw[1]]
+                out.append(a)
             elif f.endswith(".npy"):
                 out.append(np.load(os.path.join(root, f)))
             if len(out) >= n:

@@ -5,7 +5,8 @@
 For the MLPerf Tiny reference models (ResNet-8, DS-CNN) and other fully int8
 TFLite CNNs: CONV_2D, DEPTHWISE_CONV_2D (multiplier 1), ADD, AVERAGE_POOL_2D,
 MAX_POOL_2D, RESHAPE, FULLY_CONNECTED, SOFTMAX (dropped: the engine returns
-logits). NHWC becomes NCHW; fused activations become Relu / Clip. Tensors
+logits). MLPs with a vector input (MLPerf Tiny anomaly detection) become 1x1
+convolutions on a 1 x 1 map, the last layer a Gemm. NHWC becomes NCHW; fused activations become Relu / Clip. Tensors
 keep TFLite's asymmetric quantization; the importer maps it to the engine
 (see onnx_import.py).
 """
@@ -98,6 +99,9 @@ def convert(path):
 
     inp = g.Inputs(0)
     ishape = tensor(inp).ShapeAsNumpy()    # N H W C
+    vec_in = len(ishape) == 2              # an MLP: the vector is a 1 x 1 map
+    if vec_in:
+        ishape = np.array([ishape[0], 1, 1, ishape[1]])
     s, z = quant(inp)
     dt = np.int8 if tensor(inp).Type() == tflite.TensorType.INT8 else np.uint8
     c("in.s", F32(s[0]))
@@ -161,12 +165,29 @@ def convert(path):
             nodes.append(helper.make_node("Flatten", [names[ins[0]]], [f"t{outs[0]}"], axis=1))
             names[outs[0]] = f"t{outs[0]}"
         elif opn == "FULLY_CONNECTED":
+            opt = tflite.FullyConnectedOptions()
+            opt.Init(tb.Bytes, tb.Pos)
             x = names[ins[0]]
             s_in = quant(ins[0])[0][0]
             w = data(ins[1])                                 # [out, in]
             per = len(quant(ins[1])[0]) > 1
+            if outs[0] != g.Outputs(0) and vec_in:
+                # a hidden layer of an MLP: 1x1 conv on a 1x1 map, int8 out
+                wf, s_w = weights(ins[1], w[:, :, None, None], per, s_in, nm)
+                bf = bias(ins[2], s_w, s_in, nm, per)
+                nodes.append(helper.make_node("Conv", [x, wf, bf], [nm + ".y"], name=nm,
+                                              kernel_shape=[1, 1]))
+                y = act(nm + ".y", opt.FusedActivationFunction(), outs[0], nm)
+                nodes.append(helper.make_node("Identity", [y], [f"t{outs[0]}.f"]))
+                act_q(outs[0])
+                continue
+            assert opt.FusedActivationFunction() == tflite.ActivationFunctionType.NONE, \
+                "activation on the output layer"
             wf, s_w = weights(ins[1], w, per, s_in, nm)
             bf = bias(ins[2], s_w, s_in, nm, per)
+            if vec_in:
+                nodes.append(helper.make_node("Flatten", [x], [nm + ".x"], axis=1))
+                x = nm + ".x"
             nodes.append(helper.make_node("Gemm", [x, wf, bf], [f"t{outs[0]}"], name=nm, transB=1))
             names[outs[0]] = out_name = f"t{outs[0]}"
         elif opn == "SOFTMAX":

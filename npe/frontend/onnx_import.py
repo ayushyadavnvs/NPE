@@ -166,8 +166,9 @@ class Program:
     in_offset: int              # engine input = ONNX quantized input + in_offset
     in_scale: object
     in_zp: object
-    out_scale: np.ndarray       # real logit = raw int32 * out_scale
+    out_scale: np.ndarray       # real result = int32 result * out_scale (fc logits or OUT map)
     notes: list
+    onnx_in_shape: tuple = None  # C, H, W of the ONNX input when it differs (folded vector)
 
 
 class Pending:
@@ -288,11 +289,46 @@ class Importer:
                 raise Unsupported(f"node {n.name or n.output[0]}: op {op} not supported")
             fn(n)
         outs = [o.name for o in g.output]
-        if self.out_layer is None:
-            raise Unsupported("the graph must end in a fully connected layer")
+        if self.out_layer is None:          # a feature-map output: op OUT
+            if len(outs) != 1:
+                raise Unsupported("several graph outputs")
+            v = self.val.get(outs[0])
+            if not isinstance(v, T) or v.bits != 8:
+                raise Unsupported("the graph must end in a fully connected layer or a "
+                                  "quantized feature map")
+            L = Layer("out", "output", x=v)
+            self.layers.append(L)
+            self.out_layer = L
+        self.fold_vector_input()
         live = {L.out.name for L in self.layers if L.out is not None}
         self.notes += [f"{k}: {v}" for k, v in self.widened.items() if k in live]
         return self
+
+    def fold_vector_input(self):
+        """A vector input (1 x 1 x C, C > P: an MLP) does not fit the image
+        path, which takes at most P channels a pixel. Read it as a 1 x C/P
+        image of P channels: each 1x1 layer on it becomes a 1 x C/P conv with
+        valid padding, the same sum. The host streams the same bytes."""
+        t = self.inp
+        if t.h != 1 or t.w != 1 or t.c <= P:
+            return
+        users = [L for L in self.layers if L.x is t]
+        if t.c % P or not users or any(
+                L.kind != "conv" or L.w.shape[2:] != (1, 1) for L in users):
+            raise Unsupported(f"input: a {t.c}-channel vector needs 1x1 dense layers "
+                              f"and a multiple of {P} channels")
+        n = t.c // P
+        for L in users:
+            o = L.w.shape[0]
+            L.w = L.w.reshape(o, n, P).transpose(0, 2, 1).reshape(o, P, 1, n)
+            L.attrs.update(kw=n)
+        if np.ndim(t.zp):     # per-channel zero points must repeat every P channels
+            z = np.asarray(t.zp).reshape(n, P)
+            if np.any(z != z[0]):
+                raise Unsupported("input: per-element zero points on a vector input")
+            t.zp = z[0]
+        self.in_fold = (t.c, 1, 1)
+        t.w, t.c = n, P
 
     def op_Constant(self, n):
         pass
@@ -734,6 +770,10 @@ class Lowering:
         elif L.kind in ("dw", "pool", "gap"):
             x = self.fmt(L.x)
             o.width, o.perm = x.width, x.perm.copy()
+        elif L.kind == "out":
+            x = self.fmt(L.x)
+            if not np.array_equal(x.perm, np.arange(x.c)):
+                raise Unsupported("output feature map: channels not in order")
         elif L.kind == "concat":
             off, perm = 0, []
             for p in L.parts:
@@ -842,6 +882,8 @@ class Lowering:
         for L in self.layers:
             if L.t < 0:
                 continue
+            if L.out is None:       # OUT: reads only
+                continue
             o = (L.out_full if L.epi == isa.EPI_INTERLEAVE else L.out).grp
             a = L.x.base_root().grp
             pairs = [(a, o)]
@@ -879,7 +921,8 @@ class Lowering:
         vs = [L.out.width for L in self.layers if L.kind == "gap"]
         if vs:
             self.peak[isa.BUF_V] = max(vs)
-        self.peak[isa.BUF_OUT] = sum(L.out.c for L in self.layers if L.kind == "fc")
+        self.peak[isa.BUF_OUT] = sum(L.out.c for L in self.layers if L.kind == "fc") + \
+            sum(L.x.h * L.x.w * L.x.c for L in self.layers if L.kind == "out")
 
     # emission -------------------------------------------------------------
     @staticmethod
@@ -903,6 +946,13 @@ class Lowering:
         ab, abase, apix, aoff = self.loc(x)
         I = Instr(a_buf=ab, a_base=abase, a_h=x.h, a_w=x.w, a_c=x.width, a_pix=apix, a_off=aoff,
                   a_signed=int(x.signed), a_bits=x.bits)
+        if L.kind == "out":
+            I.op, I.o_buf, I.o_h, I.o_w, I.o_c = isa.OP_OUT, isa.BUF_OUT, x.h, x.w, x.c
+            I.o_signed, I.o_bits = 1, 32
+            self.out_scale = np.float64(x.scale)
+            self.prog.append(I)
+            self.names.append(L.name)
+            return
         o = L.out
         oo = L.out_full if L.epi == isa.EPI_INTERLEAVE else o
         ob, obase, opix, ooff = self.loc(oo)
@@ -1013,7 +1063,7 @@ def import_model(model):
     s, z, off = imp.in_info
     return Program(low.prog, low.params, low.names, low.peak,
                    (imp.inp.h, imp.inp.w, imp.inp.c), imp.inp.signed, off, s, z,
-                   np.asarray(low.out_scale), imp.notes)
+                   np.asarray(low.out_scale), imp.notes, getattr(imp, "in_fold", None))
 
 
 def main():

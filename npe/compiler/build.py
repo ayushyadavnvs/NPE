@@ -42,7 +42,7 @@ def build(prog, params, peak, out, no_uram=False, po=1, pi=1, pc=1, board="kv260
     with open(os.path.join(out, "npe_config.h"), "w") as f:
         f.write(pack.config_header(cfg))
     code = np.frombuffer(isa.encode(hw), np.uint8).reshape(len(hw), -1)
-    n_out = sum(I.o_c for I in hw if I.o_buf == isa.BUF_OUT)
+    n_out = pack.n_results(hw)
     with open(os.path.join(out, "load.bin"), "wb") as f:
         f.write(struct.pack("<6I", len(hw), len(mems["W"]), len(mems["WD"]),
                             len(mems["Q"]), len(mems["QD"]), n_out))
