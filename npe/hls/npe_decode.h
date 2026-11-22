@@ -44,6 +44,7 @@ struct npe_dec_t {
   int lo, hi;
   // parameters
   int w_base, q_base;
+  bool w_stream;     // weights come through the W ring (npe_wstream.h)
 };
 
 // Channel counts and offsets are multiples of P (checked by the packer), so
@@ -113,6 +114,7 @@ inline npe_dec_t npe_decode(const npe_instr_t &I) {
     d.hi = I.act_max; // quantized 6.0
   d.w_base = I.w_base;
   d.q_base = I.q_base;
+  d.w_stream = NPE_W_RING && I.w_stream;
   return d;
 }
 

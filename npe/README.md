@@ -18,6 +18,7 @@ rationale: the "Generalization plan" section of the project analysis doc.
 | `tb/tb_run.cpp`, `tests/test_engine_e2e.py` | Whole ShuffleNet on the engine, image in, logits out, vs the golden logits |
 | `compiler/lower_mobilenetv2.py` | MobileNetV2-shaped test network (real layer structure, random calibrated int8 weights): exercises the fused ADD and ReLU6 |
 | `tests/test_shufflenet_isa.py` | ShuffleNet on the generic instructions vs the 104 golden logits |
+| `hls/npe_wstream.h`, `hls/npe_wfetch.cpp`, `compiler/wstream.py`, `compiler/wsim.py` | DRAM weight streaming: ring in W, fetcher IP (m_axi to AXI-Stream), which layers stream (`build.py --stream none\|all\|auto --w-budget KB`), and a wait-time estimate |
 
 Run from the repo root:
 
@@ -28,6 +29,8 @@ python3 -m npe.tests.test_engine                # HLS engine vs reference, CPU o
 python3 -m npe.tests.test_engine_e2e 5          # whole network on the engine, 5 images
 python3 -m npe.tests.test_top 5                 # same, through the AXI top level
 python3 -m npe.tests.test_top --model mobilenetv2  # MobileNetV2-shaped net vs the reference
+python3 -m npe.tests.test_top 5 --stream all --starve 30   # weights from "DRAM", stream often empty
+python3 -m npe.compiler.wsim --model mobilenetv2 --po 4 --pi 2 --pc 8   # waits for DRAM, estimate
 python3 -m npe.compiler.build && vitis_hls -f npe/hls/csynth.tcl   # synthesis
 ```
 

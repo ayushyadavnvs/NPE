@@ -34,8 +34,10 @@ load_loop:
 
 void npe_top(hls::stream<npe_load_beat_t> &load_in,
              hls::stream<npe_img_beat_t> &img_in,
-             hls::stream<npe_out_beat_t> &out, int mode, int count, int n_out) {
+             hls::stream<npe_out_beat_t> &out, hls::stream<npe_ws_t> &w_in,
+             int mode, int count, int n_out) {
 #pragma HLS INTERFACE mode = axis port = load_in
+#pragma HLS INTERFACE mode = axis port = w_in
 #pragma HLS INTERFACE mode = axis port = img_in
 #pragma HLS INTERFACE mode = axis port = out
 #pragma HLS INTERFACE mode = s_axilite port = mode bundle = CTRL
@@ -56,6 +58,7 @@ void npe_top(hls::stream<npe_load_beat_t> &load_in,
   static npe_word_t B[NPE_NB][NPE_ROWS(NPE_BUF_B_WORDS)];
   static npe_word_t C[NPE_NB][NPE_ROWS(NPE_BUF_C_WORDS)];
   static npe_vword_t V[NPE_V_WORDS];
+  static npe_wring_t WR; // weight ring state (npe_wstream.h)
   // NB banks per feature buffer, each a true dual-port RAM (see npe_types.h).
 #pragma HLS ARRAY_PARTITION variable = S0 dim = 1 complete
 #pragma HLS ARRAY_PARTITION variable = A dim = 1 complete
@@ -104,11 +107,12 @@ read_image:
     for (int b = 0; b < NPE_IN_PPB; b++)
       IN[b][i] = beat.data.range(8 * NPE_IN_C * (b + 1) - 1, 8 * NPE_IN_C * b);
   }
+  npe_ws_reset(WR);
 run_program:
   for (int pc = 0; pc < count; pc++) {
 #pragma HLS LOOP_TRIPCOUNT min = 1 max = 64 avg = 59
     npe_instr_t instr = npe_unpack(PROG[pc]);
-    npe_step(instr, IN, S0, A, B, C, V, results, W, WD, Q, QD);
+    npe_step(instr, IN, S0, A, B, C, V, results, W, WD, Q, QD, w_in, WR);
   }
 write_results:
   for (int k = 0; k < n_out; k++) {

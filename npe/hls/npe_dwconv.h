@@ -2,6 +2,7 @@
 #define NPE_DWCONV_H_
 
 #include "npe_mem.h"
+#include "npe_wstream.h"
 
 // Depthwise convolution: every channel is convolved with its own kh x kw
 // kernel (groups = channels). Any kernel size, stride and zero padding.
@@ -22,6 +23,9 @@
 // words per cycle (NPE_RQ, a knob) during the next group's taps. That needs
 // kh * kw * RQ >= PC (checked by the packer); the loop runs PC / RQ extra
 // cycles at the end to drain the last group.
+//
+// Each cycle also takes in a weight-stream beat for later streamed conv
+// layers, if the ring has room (npe_wstream.h).
 inline void npe_dwconv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS INLINE off
   npe_acc_t acc[NPE_PC][NPE_P]; // running sums of the current channel group
@@ -33,6 +37,7 @@ inline void npe_dwconv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS DEPENDENCE variable = A inter false
 #pragma HLS DEPENDENCE variable = B inter false
 #pragma HLS DEPENDENCE variable = C inter false
+#pragma HLS DEPENDENCE variable = W inter false
 
   const int taps = d.kh * d.kw;
   const int steps = d.out_h * d.out_w * d.ch_g * taps;
@@ -57,6 +62,7 @@ inline void npe_dwconv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 dwconv_loop:
   for (int i = 0; i < total; i++) {
 #pragma HLS PIPELINE II = 1
+    npe_ws_take(WS, WR, W, WR.pos); // weights of later streamed layers
     const bool last_kx = (kx == d.kw - 1);
     const bool last_ky = (ky == d.kh - 1);
     const bool first_tap = (ky == 0 && kx == 0);

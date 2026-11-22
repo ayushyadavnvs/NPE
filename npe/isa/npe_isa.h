@@ -10,7 +10,7 @@ enum { NPE_ACT_NONE, NPE_ACT_RELU, NPE_ACT_RELU6 };
 enum { NPE_PAD_ZERO, NPE_PAD_CONST };
 enum { NPE_BUF_IN, NPE_BUF_OUT, NPE_BUF_S0, NPE_BUF_A, NPE_BUF_B, NPE_BUF_C, NPE_BUF_V };
 
-// One layer. 41 x 16-bit fields; field order = binary program order.
+// One layer. 42 x 16-bit fields; field order = binary program order.
 struct npe_instr_t {
   uint16_t op;
   uint16_t epi;
@@ -53,9 +53,10 @@ struct npe_instr_t {
   uint16_t w_bits;
   uint16_t w_base;
   uint16_t q_base;
+  uint16_t w_stream;
 };
 
-#define NPE_INSTR_FIELDS 41
+#define NPE_INSTR_FIELDS 42
 
 // X(name, index) for every field: field i is bits [16i + 15 : 16i] of a
 // packed instruction word.
@@ -100,6 +101,7 @@ struct npe_instr_t {
   X(raw_out, 37) \
   X(w_bits, 38) \
   X(w_base, 39) \
-  X(q_base, 40)
+  X(q_base, 40) \
+  X(w_stream, 41)
 
 #endif // NPE_ISA_H_

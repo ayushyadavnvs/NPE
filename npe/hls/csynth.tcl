@@ -22,6 +22,8 @@
 #   D=npe/build/top_mobilenetv2_po4_pi2_pc8_rq1_rqc1_ppb4
 #   NPE_CFG=$D NPE_PRJ=hls_cosim NPE_STEPS="csim csynth cosim" \
 #     NPE_TB_ARGS="$PWD/$D/load.bin $PWD/$D/images.txt" vitis_hls -f npe/hls/csynth.tcl
+# NPE_TOP=npe_wfetch (synthesize the weight fetcher IP instead; it does not
+# depend on the build: NPE_PRJ=hls_wfetch NPE_TOP=npe_wfetch NPE_EXPORT=1).
 set root [file normalize [file join [file dirname [info script]] ..]]
 proc env_or {name default} {
   if {[info exists ::env($name)]} { return $::env($name) }
@@ -35,10 +37,14 @@ set clock [env_or NPE_CLOCK_NS 5]
 file mkdir [file join $root build]
 cd [file join $root build]
 open_project -reset [env_or NPE_PRJ hls_npe]
-set_top npe_top
+set top [env_or NPE_TOP npe_top]
+set_top $top
 set cflags "-I$cfg -I$root/hls -I$root/isa"
-add_files [file join $root hls npe_top.cpp] -cflags $cflags
-add_files -tb [file join $root tb tb_top.cpp] -cflags $cflags
+add_files [file join $root hls $top.cpp] -cflags $cflags
+if {$top eq "npe_top"} {
+  add_files -tb [file join $root tb tb_top.cpp] -cflags $cflags
+  add_files -tb [file join $root hls npe_wfetch.cpp] -cflags $cflags
+}
 open_solution -reset sol -flow_target vivado
 set_part $part
 create_clock -period $clock

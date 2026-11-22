@@ -2,6 +2,7 @@
 #define NPE_CONV_H_
 
 #include "npe_mem.h"
+#include "npe_wstream.h"
 
 // Dense convolution: any kernel size, stride and padding, with an optional
 // epilogue: INTERLEAVE, or ADD (residual; only in builds with NPE_HAS_ADD,
@@ -46,6 +47,12 @@
 //
 // Memory ports per cycle: each buffer is read once (NB consecutive words)
 // and written once (up to 2 * PO consecutive words), see npe_mem.h.
+//
+// Streamed weights (d.w_stream, see npe_wstream.h): W is read from the ring.
+// Before the first input cycle of a group the loop waits (cycles that change
+// nothing but the requant of the pending group) until the whole group is in
+// the ring. Every cycle, streamed layer or not, takes in one stream beat if
+// there is room, so the next layers' weights arrive during this one.
 inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS INLINE off
   npe_acc_t acc[NPE_PO][NPE_P]; // running sums of the current output group
@@ -61,6 +68,9 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
 #pragma HLS DEPENDENCE variable = A inter false
 #pragma HLS DEPENDENCE variable = B inter false
 #pragma HLS DEPENDENCE variable = C inter false
+  // The ring slot written is never one that is being read (npe_wstream.h).
+#pragma HLS DEPENDENCE variable = W inter false
+#pragma HLS DEPENDENCE variable = W intra false
 
   // Padding word: stored after the layer's weights.
   npe_word_t pad_word = 0;
@@ -94,18 +104,42 @@ inline void npe_conv(const npe_dec_t &d, NPE_BUF_PARAMS, NPE_MEM_PARAMS) {
   // Pending group: its Q word, first output word, real words, and the next
   // of its words to requantize (pend_k >= pend_n: nothing pending).
   int pend_q = d.q_base, pend_o = 0, pend_n = 0, pend_k = 0;
+  // Streamed weights: stream word of the current group's first word.
+  const bool streamed = d.w_stream;
+  // Stream word = w_addr + s_delta (changes only between groups, so the
+  // per-cycle counters stay as they are).
+  int s_group = WR.pos;
+  int s_delta = WR.pos - (d.w_base + (d.cout_g - 1) * d.w_per_out);
+  const int s_delta_step = 2 * d.w_per_out;
+  int s_need = WR.pos + d.w_per_out; // the ring must reach this word first
+  bool g_first = true; // at the first input cycle of a group (pixel 0)
+  bool have = false;   // the ring held the group's words at the start of
+                       // the last cycle (registered: one cycle late is safe)
+  bool last_pix = (n_pix == 1); // pix == n_pix - 1, kept as a flag
 
+  int i = 0; // cycles that did work (not waiting for weights)
 conv_loop:
-  for (int i = 0; i < total; i++) {
+  while (i < total) {
 #pragma HLS PIPELINE II = 1
+#pragma HLS LOOP_TRIPCOUNT min = 1 max = 100000
     const bool last_ig = (ig == d.cin_g - 1);
     const bool last_kx = (kx == d.kw_c - 1);
     const bool last_ky = (ky == d.kh - 1);
     const bool idle = (hold > 0);   // stretch cycle: no new input
-    const bool first_in = (ky == 0 && kx == 0 && ig == 0) && !idle;
+    const bool tap0 = (ky == 0 && kx == 0 && ig == 0) && !idle;
+    // Waiting for a streamed group's weights (only before its first cycle).
+    const bool wait = streamed && g_first && !have;
+    have = (WR.wr >= s_need);
+    npe_ws_take(WS, WR, W, streamed ? s_group : WR.pos);
+    const int i_now = i;
+    if (!wait)
+      i++;
+    const bool quiet = idle || wait; // no new input this cycle
+    const bool first_in = tap0 && !wait;
     const bool last_in = last_ky && last_kx && last_ig;
+    const bool grp_end = last_in && last_pix && og != 0; // next: group og - 1
     // The group ends in its last input cycle, or its last idle cycle.
-    const bool done = idle ? (hold == 1) : (last_in && stretch == 0);
+    const bool done = wait ? false : idle ? (hold == 1) : (last_in && stretch == 0);
     const int iy = iy0 + ky, ix = ix0 + kx;
     const bool inside = (iy >= 0 && iy < d.a_h && ix >= 0 && ix < d.a_w);
 
@@ -131,7 +165,7 @@ conv_loop:
   conv_in_word:
     for (int k = 0; k < NPE_PI; k++) {
       bool real = (ig * NPE_PI + k < d.cin_w);
-      if (idle)
+      if (quiet)
         x[k] = 0;
       else if (from_in)
         x[k] = (k == 0) ? image_word : (npe_word_t)0;
@@ -146,7 +180,7 @@ conv_loop:
         b_word[po] = bv[po];
     }
 
-    const bool step = (i < steps); // else: draining the last group
+    const bool step = (i_now < steps); // else: draining the last group
 
     // Requantize RQC words of the pending group.
     npe_qword_t quant = Q[pend_q];
@@ -160,6 +194,13 @@ conv_loop:
         if (k - j == pend_k)
           bw = pend_b[k];
       rb[j] = bw;
+      // Quant block of that word: PO constant slices, one picked (a run-time
+      // shift of the whole Q word costs ~50k LUT at PO 4).
+      ap_uint<NPE_QL> qs = 0;
+    conv_rq_q:
+      for (int k = j; k < NPE_PO; k += NPE_RQC)
+        if (k - j == pend_k)
+          qs = quant.range(k * NPE_QL + NPE_QL - 1, k * NPE_QL);
     conv_rq_lane:
       for (int o = 0; o < NPE_P; o++) {
         npe_acc_t sum = 0, bias = 0;
@@ -169,15 +210,16 @@ conv_loop:
         for (int k = j; k < NPE_PO; k += NPE_RQC) {
           if (k - j == pend_k) {
             sum = pend[k][o];
-            const int q = k * NPE_QL;
-            bias = quant.range(q + 32 * o + 31, q + 32 * o);
-            M = quant.range(q + 32 * NPE_P + 32 * o + 31, q + 32 * NPE_P + 32 * o);
-            S = quant.range(q + 64 * NPE_P + 8 * o + 5, q + 64 * NPE_P + 8 * o);
-#if NPE_HAS_ADD
-            Mb = quant.range(q + 72 * NPE_P + 32 * o + 31, q + 72 * NPE_P + 32 * o);
-#endif
           }
         }
+        bias = qs.range(32 * o + 31, 32 * o);
+        M = qs.range(32 * NPE_P + 32 * o + 31, 32 * NPE_P + 32 * o);
+        S = qs.range(64 * NPE_P + 8 * o + 5, 64 * NPE_P + 8 * o);
+        if (S == 0) // no word pending: keep the rounding shift defined
+          S = 1;
+#if NPE_HAS_ADD
+        Mb = qs.range(72 * NPE_P + 32 * o + 31, 72 * NPE_P + 32 * o);
+#endif
         ap_int<48> extra = 0; // ADD epilogue: b * Mb joins before the rounding
         if (NPE_HAS_ADD && d.add)
           extra = npe_lane(bw, o, d.b_signed) * Mb;
@@ -216,7 +258,8 @@ conv_loop:
       pend_k += NPE_RQC;
 
     // Multiply-accumulate: PO x P outputs, PI x P inputs.
-    npe_wword_t weights = W[w_addr];
+    npe_wword_t weights =
+        W[streamed ? NPE_W_RING_BASE + ((w_addr + s_delta) & (NPE_W_RING - 1)) : w_addr];
   conv_out_word:
     for (int po = 0; po < NPE_PO; po++) {
     conv_out_ch:
@@ -245,16 +288,27 @@ conv_loop:
       pend_q = d.q_base + og;
       pend_o = o_pixel + (d.interleave ? 2 * NPE_PO * og : NPE_PO * og);
     }
-    if (!step)
+    if (!step || wait)
       continue;
+    g_first = false;
     if (!idle && last_in && stretch > 0) { // start the idle cycles
       hold = stretch;
       continue;
     }
     if (idle) {
+      const bool more = (hold != 1); // from the register, not hold - 1
       hold--;
-      if (hold > 0)
+      if (more)
         continue;
+    }
+
+    // Streamed: the next group's stream counters, flat (off the counter chain).
+    if (grp_end) {
+      s_group += d.w_per_out; // the stream holds the groups in this order
+      s_need += d.w_per_out;
+      s_delta += s_delta_step; // next group: stream up, W address down
+      g_first = true;
+      have = false; // check again against the new s_need
     }
 
     // Advance, innermost first: input group, kernel column, kernel row,
@@ -277,7 +331,8 @@ conv_loop:
         } else {
           ky = 0;
           w_addr -= d.w_per_out; // the same group's weights, next pixel
-          if (pix != n_pix - 1) {
+          if (!last_pix) {
+            last_pix = (pix == n_pix - 2);
             pix++;
             b_pixel += d.b_step;
             o_pixel += d.o_step;
@@ -294,6 +349,7 @@ conv_loop:
             }
           } else if (og != 0) { // next lower group, from the first pixel
             pix = 0;
+            last_pix = (n_pix == 1);
             og--;
             w_addr = d.w_base + og * d.w_per_out;
             b_pixel = d.b_first;
@@ -311,6 +367,8 @@ conv_loop:
       a_word = a_tap;
     }
   }
+  if (streamed)
+    WR.pos += d.cout_g * d.w_per_out;
 }
 
 #endif // NPE_CONV_H_
