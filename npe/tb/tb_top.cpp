@@ -104,15 +104,21 @@ int main(int argc, char **argv) {
     }
     if (!dram.empty())
       npe_wfetch(dram.data(), (int)dram.size(), w_in);
+#ifdef NPE_SHIM_STREAM
     int starve = w_in.starve;
+#endif
     npe_top(load_in, img_in, out, w_in, NPE_RUN, hdr[0], n_out);
-    w_in.starve = 0;
+#ifdef NPE_SHIM_STREAM
+    w_in.starve = 0; // size check below must see the real queue
+#endif
     bool ok = (int)out.size() == n_out;
     if (!w_in.empty()) {
       printf("run left %d weight beats unread\n", (int)w_in.size());
       ok = false;
     }
+#ifdef NPE_SHIM_STREAM
     w_in.starve = starve;
+#endif
     printf("%s:", strrchr(dir, '/') ? strrchr(dir, '/') + 1 : dir);
     for (int k = 0; k < n_out && !out.empty(); k++) {
       npe_out_beat_t beat = out.read();
